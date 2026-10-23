@@ -1,0 +1,11 @@
+website/
+go/
+doing-it/
+bin/
+website-generator/website-generator
+labs/*.bench.txt
+labs/**/*.prof
+labs/**/*.test
+labs/**/*.out
+labs/**/default.pgo
+labs/**/*.pprof

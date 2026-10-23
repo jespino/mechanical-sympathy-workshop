@@ -1,0 +1,188 @@
+{
+  "style_prefix": "A hand-drawn, xkcd-style technical diagram on a plain white background, drawn with sketchy, slightly wobbly black ink lines and hand-lettered labels, as if drawn with a pen on paper. Serious and explanatory: no jokes, no humor, no comic captions, no stick figures, no human characters. ",
+  "style_suffix": " Clean, uncluttered layout with generous spacing, readable hand-lettered text spelled exactly as given, white background throughout. Minimal color: black ink only, plus a single subtle teal accent used only where stated. Landscape orientation.",
+  "diagrams": [
+    {
+      "id": "00-loop",
+      "anchor": "00-introduction-setup:## How This Workshop Works",
+      "alt_en": "The workshop loop: measure, understand why, change one thing, measure again",
+      "alt_es": "El ciclo del workshop: medir, entender por qué, cambiar una cosa, volver a medir",
+      "prompt": "A circular loop of four labeled hand-drawn boxes connected by hand-drawn arrows going clockwise: top box '1. Measure (go test -bench)', right box '2. Understand WHY (pprof, -gcflags=-m, Go source)', bottom box '3. Change ONE thing', left box '4. Measure again (benchstat)', and an arrow from box 4 back to box 1. In the center of the loop, hand-lettered text 'the mechanical sympathy loop'. Box 2 is filled with the subtle teal accent."
+    },
+    {
+      "id": "00-layers",
+      "anchor": "00-introduction-setup:intro",
+      "alt_en": "The three layers under your Go code: compiler, runtime and hardware",
+      "alt_es": "Las tres capas bajo tu código Go: compilador, runtime y hardware",
+      "prompt": "A vertical layered stack of four wide hand-drawn horizontal slabs, stacked on top of each other like a layer cake. Top slab: 'your Go code'. Second slab: 'COMPILER' with small hand-lettered notes 'inlining · escape analysis · bounds checks'. Third slab: 'RUNTIME' with notes 'allocator · garbage collector · scheduler'. Bottom slab: 'HARDWARE' with notes 'caches · branch predictor · syscalls'. On the right side, a tall hand-drawn bracket spanning the three lower slabs, labeled 'the machine'. The top slab 'your Go code' is outlined with the teal accent."
+    },
+    {
+      "id": "01-bn-ramp",
+      "anchor": "01-benchmarking:### The `b.N` ramp-up",
+      "alt_en": "How go test grows b.N until a run lasts long enough to measure",
+      "alt_es": "Cómo go test aumenta b.N hasta que una ejecución dura lo suficiente para medirla",
+      "prompt": "A left-to-right sequence of five hand-drawn horizontal bars of increasing length, each representing one run of a benchmark function, labeled under each bar: 'b.N = 1', 'b.N = 100', 'b.N = 10,000', 'b.N = 1,000,000', 'b.N = 100,000,000'. A dashed vertical line crosses the longest bar, labeled '-benchtime = 1s'. The short bars have a small note 'too short to trust, try a bigger N'. The last, longest bar is highlighted with the teal accent and labeled 'this run is reported: total time / b.N = ns/op'. A hand-drawn arrow underneath the whole sequence labeled 'testing.B predicts the next N from the previous run'."
+    },
+    {
+      "id": "01-dce",
+      "anchor": "01-benchmarking:### Dead-code elimination: the benchmark that measures nothing",
+      "alt_en": "Dead-code elimination: the compiler removes work whose result is never used",
+      "alt_es": "Eliminación de código muerto: el compilador elimina el trabajo cuyo resultado no se usa",
+      "prompt": "Two side-by-side panels. Left panel titled 'what you wrote': a hand-drawn loop box containing two lines of code 'for i := 0; i < b.N; i++ {' and '    PopCount(x)   // result unused' and '}'. A big hand-drawn arrow labeled 'compiler: inline, then drop unused result' points to the right panel. Right panel titled 'what actually runs': the same loop box but now empty inside, with only 'for i := 0; i < b.N; i++ { }' and a note 'an empty loop: 0.2 ns/op'. Below both panels, a teal-accented box: 'fix: use b.Loop() or keep the result alive'."
+    },
+    {
+      "id": "02-sampling",
+      "anchor": "02-profiling:### The CPU profiler: a signal 100 times per second",
+      "alt_en": "The CPU profiler interrupts the program 100 times per second and records the stack",
+      "alt_es": "El profiler de CPU interrumpe el programa 100 veces por segundo y anota el stack",
+      "prompt": "Top half: a long horizontal timeline labeled 'your program running', with small vertical tick marks every equal interval, each tick labeled 'SIGPROF', and a note 'every 10 ms (100 Hz)'. From three of the ticks, hand-drawn arrows go down to small hand-drawn stacks of rectangles (call stacks) such as 'main > report > normalizePath > regexp.Compile', 'main > report > fmt.Sprintf', 'main > report > normalizePath > regexp.Compile'. Bottom half: those stacks flow with arrows into a single box labeled 'profile: count of samples per stack', containing a tiny bar list where 'regexp.Compile' has the longest bar, drawn with the teal accent. A small note near the timeline: 'functions that run more get sampled more'."
+    },
+    {
+      "id": "02-flat-cum",
+      "anchor": "02-profiling:### Reading a profile: `flat` vs `cum`",
+      "alt_en": "flat counts samples where a function itself was running, cum includes everything it called",
+      "alt_es": "flat cuenta las muestras en las que la propia función se ejecutaba, cum incluye todo lo que llamó",
+      "prompt": "A top-down call tree of hand-drawn boxes: root box 'report', with two children 'normalizePath' and 'formatLine'; 'normalizePath' has two children 'regexp.Compile' and 'ReplaceAllString'. A teal-accented dashed outline encloses 'normalizePath' together with its whole subtree, labeled 'cum = time in this function + everything it calls'. A separate black arrow pointing only at the single box 'regexp.Compile' is labeled 'flat = time in this function itself'. A small note at the bottom: 'sort by cum to find the expensive path, by flat to find the expensive leaf'."
+    },
+    {
+      "id": "03-growslice",
+      "anchor": "03-preallocation:### The growth formula",
+      "alt_en": "Each time append runs out of capacity, growslice allocates a bigger array, copies everything and leaves the old one as garbage",
+      "alt_es": "Cada vez que append se queda sin capacidad, growslice reserva un array más grande, copia todo y deja el viejo como basura",
+      "prompt": "A top-to-bottom sequence of hand-drawn arrays made of small square cells, each array bigger than the previous: an array of 4 cells labeled 'cap 4', then an array of 8 cells labeled 'cap 8', then 16 cells labeled 'cap 16', then 32 cells labeled 'cap 32'. Between consecutive arrays, a hand-drawn arrow labeled 'growslice: allocate + copy all'. Each older array is crossed out with light hatching and labeled 'garbage for the GC'. On the right side, a single 32-cell array drawn with the teal accent labeled 'make([]T, 0, 32): one allocation, no copies'."
+    },
+    {
+      "id": "03-swiss",
+      "anchor": "03-preallocation:### Maps grow too",
+      "alt_en": "A Swiss Table map: a directory of tables, each table made of groups of 8 slots with a control word",
+      "alt_es": "Un map Swiss Table: un directorio de tablas, cada una formada por grupos de 8 slots con una palabra de control",
+      "prompt": "A hand-drawn data structure diagram. On the left, a tall narrow box labeled 'directory' with four rows, each row an arrow pointing right to a box labeled 'table'. Zoom into one table on the right: it contains several rows labeled 'group', and each group is drawn as a strip of 8 tiny control-byte cells labeled 'control word (8 tags)' above 8 larger cells labeled 'slot (key, value)'. A small note near the table: 'max load 7/8, then grow: double the table, or split it past 1024 slots'. One table is outlined with the teal accent and labeled 'growing = rehash and reinsert every entry'."
+    },
+    {
+      "id": "04-headers",
+      "anchor": "04-strings-bytes:### Two headers",
+      "alt_en": "A string header has a pointer and a length; a slice header adds a capacity. Converting between them copies the bytes",
+      "alt_es": "La cabecera de un string tiene puntero y longitud; la de un slice añade capacidad. Convertir entre ellos copia los bytes",
+      "prompt": "Two hand-drawn header boxes on the left, one above the other. Top: 'string' header with two cells 'ptr' and 'len'. Bottom: '[]byte' slice header with three cells 'ptr', 'len', 'cap'. Each header's 'ptr' cell has an arrow pointing to its own separate row of byte cells on the right containing the letters 'h e l l o'. The string's byte row is labeled 'read-only, can be shared'. The slice's byte row is labeled 'mutable'. Between the two byte rows, a teal hand-drawn arrow labeled 'string(b) / []byte(s): allocate + copy (unless the compiler proves it safe to skip)'."
+    },
+    {
+      "id": "05-stack-heap",
+      "anchor": "05-escape-analysis:## The Concept: Stack or Heap?",
+      "alt_en": "Values that don't outlive their function stay on the stack; values referenced after the function returns escape to the heap",
+      "alt_es": "Los valores que no sobreviven a su función se quedan en el stack; los que se usan después de que la función retorne escapan al heap",
+      "prompt": "Left side: a vertical stack of hand-drawn rectangles labeled 'goroutine stack', with frames labeled from top to bottom 'main', 'handle', 'parse (returns)'. Inside the 'parse' frame, a small box 'buf [64]byte' with a note 'dies with the frame: free'. Right side: a cloud-like hand-drawn region labeled 'heap (managed by the GC)', containing a small box 'Sample{...}'. A hand-drawn arrow goes from a pointer cell 'p *Sample' in the 'handle' frame into the heap box, labeled 'still referenced after parse returns, so it escapes'. A teal-accented note at the bottom: 'go build -gcflags=-m tells you which is which'."
+    },
+    {
+      "id": "06-inline",
+      "anchor": "06-inlining:## The Concept: What Inlining Buys",
+      "alt_en": "Inlining replaces a call with the callee's body; it only happens when the function's cost fits in the budget of 80",
+      "alt_es": "El inlining sustituye una llamada por el cuerpo de la función; solo ocurre si su coste cabe en el presupuesto de 80",
+      "prompt": "Left panel 'before inlining': a box 'caller loop' with a hand-drawn arrow jumping out to a separate box 'uvarint()' and an arrow back, with small notes on the arrows 'call: save registers, jump' and 'return'. Right panel 'after inlining': a single box 'caller loop' containing the body of uvarint written inline, with a note 'no call, and the compiler can optimize across it'. Below both panels, a horizontal hand-drawn gauge from 0 to 100 labeled 'inlining cost', with a vertical mark at 80 labeled 'budget 80'. A marker at 82 labeled 'before: cost 82, not inlined' sits just past the mark, and a teal marker at 79 labeled 'after split: cost 79, inlined' sits just before it."
+    },
+    {
+      "id": "07-outlined",
+      "anchor": "07-inlining-escape:### The outlined constructor pattern",
+      "alt_en": "When a small constructor is inlined, its allocation moves into the caller's frame and can stay on the stack",
+      "alt_es": "Cuando un constructor pequeño se hace inline, su asignación se mueve al frame del llamador y puede quedarse en el stack",
+      "prompt": "Two side-by-side panels. Left panel 'big constructor (not inlined)': a stack frame box 'caller' and a separate stack frame box 'NewDecoder', with '&Decoder{}' inside NewDecoder and an arrow from it to a cloud labeled 'heap', with a note '1 alloc per call'. Right panel 'outlined constructor': a stack frame box 'caller' that contains the inlined small 'NewDecoder' with 'd := &Decoder{}' drawn inside the caller's frame and labeled 'lives on the caller's stack', plus an arrow from the caller frame to a separate box 'd.init(block): the heavy work, not inlined'. The right panel's 'd := &Decoder{}' is highlighted with the teal accent, with a note '0 allocs'."
+    },
+    {
+      "id": "08-iface",
+      "anchor": "08-interfaces-boxing:## The Concept: Two Words and a Table",
+      "alt_en": "An interface value is two words: an itab pointer and a data pointer. Storing a non-pointer value boxes it on the heap",
+      "alt_es": "Un valor de interfaz son dos palabras: un puntero al itab y un puntero a los datos. Guardar un valor que no es puntero lo encajona en el heap",
+      "prompt": "On the left, a hand-drawn box labeled 'var s fmt.Stringer = Celsius(42)' above a box labeled 'interface value (2 words)' split into two cells: 'tab' and 'data'. From 'tab', an arrow to a box labeled 'itab' containing exactly two rows: 'type: Celsius' and 'fun[0]: String'. From the 'fun[0]: String' row, an arrow to a box 'Celsius.String()', with a note below it: 'dynamic call: load from the table, then jump; not inlined unless devirtualized'. From 'data', an arrow to a small box inside a cloud labeled 'heap', the box containing 'Celsius(42), 8 bytes'. Next to the heap, a teal note: 'boxing (convT64): one allocation, except for small values 0-255 and constants'."
+    },
+    {
+      "id": "09-padding",
+      "anchor": "09-struct-layout:### Seeing it",
+      "alt_en": "Field order decides padding: ParticleBefore takes 56 bytes, the same fields sorted by alignment take 32",
+      "alt_es": "El orden de los campos decide el padding: ParticleBefore ocupa 56 bytes, los mismos campos ordenados por alineamiento ocupan 32",
+      "prompt": "Two horizontal hand-drawn memory strips made of cells, with tick marks and numbers at byte offsets 0, 8, 16, 24, 32, 40, 48, 56. Top strip titled 'ParticleBefore: 56 bytes (size class 64)', with these segments in order from left to right: 'Active 1B', then a hatched segment 'pad 7B', then 'X 8B', then 'Kind 2B', then hatched 'pad 6B', then 'Y 8B', then 'Alive 1B', then hatched 'pad 7B', then 'Z 8B', then 'ID 4B', then hatched 'pad 4B'. Bottom strip titled 'ParticleAfter: 32 bytes (size class 32)', with segments packed and no padding: 'X 8B', 'Y 8B', 'Z 8B', 'ID 4B', 'Kind 2B', 'Active 1B', 'Alive 1B', outlined with the teal accent. Under the bottom strip, a note: 'same fields, sorted from largest to smallest alignment'. Use the abbreviation 'B' for bytes exactly as written; do not write the word 'bytes' inside the segments."
+    },
+    {
+      "id": "10-hierarchy",
+      "anchor": "10-cpu-caches:## The Concept: The Memory Hierarchy",
+      "alt_en": "The memory hierarchy: each level is bigger and slower than the one above it",
+      "alt_es": "La jerarquía de memoria: cada nivel es más grande y más lento que el anterior",
+      "prompt": "A hand-drawn pyramid, vertical orientation, divided into five horizontal levels, narrowest at the top. From top to bottom: 'registers', 'L1 cache: tens of KB, ~1 ns', 'L2 cache: ~1 MB, ~3-4 ns', 'L3 cache: tens of MB, ~10-15 ns', and the widest bottom level 'main memory (DRAM): GBs, ~80-150 ns'. On the left side, a vertical hand-drawn arrow pointing down labeled 'bigger', and on the right side a vertical arrow pointing down labeled 'slower'. A teal accent highlights the gap between L3 and main memory, with a note 'a miss here costs ~100x an L1 hit'. Vertical (portrait-like) composition is fine for this one."
+    },
+    {
+      "id": "10-traversal",
+      "anchor": "10-cpu-caches:### Cache lines",
+      "alt_en": "Row-major traversal uses every byte of each cache line; column-major traversal touches a new cache line on every access",
+      "alt_es": "Recorrer por filas usa cada byte de cada línea de caché; recorrer por columnas toca una línea nueva en cada acceso",
+      "prompt": "Two hand-drawn grids side by side, each representing a matrix of int64 values with 4 rows and 16 columns of small empty cells. In each row, the cells are grouped into two groups of 8 by thick brackets drawn above the row, each bracket labeled 'cache line'. Left grid titled 'row by row': a single continuous teal arrow snakes through the cells left to right along row 1, then row 2, then row 3, then row 4. Caption under the left grid: 'every element of each cache line is used; the prefetcher keeps up'. Right grid titled 'column by column': a black arrow goes straight down the first column, touching one cell in each row; each touched cell is shaded, and the whole 8-cell group (cache line) it belongs to is lightly outlined to show it was loaded. Caption under the right grid: 'each step loads a new cache line but uses 1 of its 8 elements'."
+    },
+    {
+      "id": "11-prove",
+      "anchor": "11-bounds-check-elimination:### The prove pass",
+      "alt_en": "The prove pass collects facts about indexes and lengths and removes the checks it can prove are always in bounds",
+      "alt_es": "El pase prove recoge hechos sobre índices y longitudes y elimina las comprobaciones que puede demostrar que siempre están en rango",
+      "prompt": "A left-to-right flow of three hand-drawn boxes. First box 'your loop' containing code lines 'for len(b) >= 16 {', '  id := b[0] ... b[15]', '  b = b[16:]', '}'. Arrow to a second box 'prove pass (SSA)' containing a small list of facts written by hand: 'len(b) >= 16', '0 <= i <= 15', 'so i < len(b)'. Arrow to a third box 'machine code' showing two versions stacked: a crossed-out version 'CMP i, len / JLS panicBounds' labeled 'check removed', and a clean version 'MOVL (AX), SI' with the teal accent labeled 'just the load'. A note under the first box: 'give it the facts: re-slice, check length once, use range'."
+    },
+    {
+      "id": "12-pipeline",
+      "anchor": "12-branch-prediction:### Pipelines and speculation",
+      "alt_en": "The CPU guesses which way a branch goes and starts executing; a wrong guess throws that work away",
+      "alt_es": "La CPU adivina hacia dónde va un salto y empieza a ejecutar; una predicción fallida tira ese trabajo",
+      "prompt": "Two horizontal timelines stacked vertically, each drawn as a row of equal-width time slots like a conveyor belt, with a time arrow underneath pointing right. In both rows, the first slot is a diamond labeled 'branch: if v >= t'. Top row titled 'prediction correct': after the diamond, a continuous run of instruction boxes 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7', 'i8' fills every slot with no gaps, with a teal note 'speculative work is kept: the branch was almost free'. Bottom row titled 'prediction wrong': after the diamond, instruction boxes 'i1' to 'i4' are drawn crossed out with a bracket labeled 'wrong path: thrown away', followed by a stretch of empty hatched slots labeled 'pipeline refill: ~15-20 cycles lost', and only then boxes 'j1', 'j2' labeled 'the right path finally starts'. Below both rows, a small note: 'random data: about half the guesses are wrong; sorted data: almost all are right'."
+    },
+    {
+      "id": "13-pool",
+      "anchor": "13-sync-pool:### One small cache per P",
+      "alt_en": "sync.Pool keeps a private slot and a shared queue per P, and other Ps can steal from the shared queues",
+      "alt_es": "sync.Pool mantiene un slot privado y una cola compartida por cada P, y otros P pueden robar de las colas compartidas",
+      "prompt": "Three hand-drawn columns side by side, labeled 'P0', 'P1', 'P2'. Each column contains a box 'poolLocal (padded to 128 bytes)' holding a small single cell labeled 'private' and below it a horizontal queue of cells labeled 'shared (lock-free deque)'. In P0, an arrow labeled 'Get/Put: private first, then head of own shared' points to its own cells, drawn with the teal accent. A dashed arrow from P2's column goes to the tail of P0's shared queue, labeled 'steal from another P's tail'. Below all three columns, a separate wide box labeled 'victim (previous GC cycle's pool)' with a note 'checked last, before calling New()'."
+    },
+    {
+      "id": "13-victim",
+      "anchor": "13-sync-pool:### The victim cache: two GCs to die",
+      "alt_en": "A pooled object survives one GC in the victim cache and is dropped at the second",
+      "alt_es": "Un objeto en el pool sobrevive a un GC en la victim cache y se descarta en el segundo",
+      "prompt": "A left-to-right timeline with two vertical dashed lines labeled 'GC #1' and 'GC #2'. Two horizontal lanes: the top lane labeled 'local (primary)', the bottom lane labeled 'victim'. Before GC #1, a small box 'buffer' sits in the top lane, labeled 'Put(buf)'. At GC #1, an arrow moves the box from the top lane down to the victim lane, labeled 'poolCleanup: local becomes victim'. Between GC #1 and GC #2, a note 'Get() can still find it here', drawn with the teal accent. At GC #2, the box is crossed out, labeled 'victim dropped: now garbage'."
+    },
+    {
+      "id": "14-mark",
+      "anchor": "14-gc-pressure:### The cost model: pointers are what costs",
+      "alt_en": "The GC follows every pointer in the heap; pointer-free memory is never scanned",
+      "alt_es": "El GC sigue todos los punteros del heap; la memoria sin punteros nunca se escanea",
+      "prompt": "Two side-by-side panels. Left panel titled '[]*Record: 2 million pointers': a box 'roots' with arrows into a slice drawn as a row of cells, each cell with an arrow to its own separate small 'Record' box scattered around, and some Records with further arrows to small 'string' boxes, labeled 'mark phase must visit every one'. Right panel titled '[]Record, pointer-free': the same roots arrow into one long contiguous strip of Record cells with no outgoing arrows, labeled 'noscan span: skipped by the mark phase', outlined with the teal accent. Under the panels, hand-lettered: 'GC cost grows with live pointers, not just live bytes'."
+    },
+    {
+      "id": "14-pacer",
+      "anchor": "14-gc-pressure:### The pacer: when does a cycle start?",
+      "alt_en": "The heap goal is the live heap plus GOGC percent; a GC cycle starts as the heap approaches the goal",
+      "alt_es": "El objetivo del heap es el heap vivo más un GOGC por ciento; un ciclo de GC empieza cuando el heap se acerca al objetivo",
+      "prompt": "A hand-drawn line chart with 'time' on the horizontal axis and 'heap size' on the vertical axis. A horizontal dashed line near the bottom labeled 'live heap'. A higher horizontal dashed line labeled 'heap goal = live heap x (1 + GOGC/100)'. The heap line forms three repeating sawtooth cycles: it rises steadily from the live heap line; at a point clearly BELOW the goal line there is a dot labeled 'trigger: GC starts marking'; from that dot the line keeps rising more slowly through a shaded band labeled 'concurrent mark' until it reaches the goal line just as marking ends; then it drops straight down back to the live heap line, labeled 'sweep frees the garbage' on the first cycle only. A double-headed vertical arrow between the two dashed lines labeled 'GOGC=100: room to grow = 100% of live'. Near the top, a separate solid horizontal line in the teal accent labeled 'GOMEMLIMIT: a soft limit; the GC runs more often as the heap nears it'."
+    },
+    {
+      "id": "15-false-sharing",
+      "anchor": "15-contention-false-sharing:### False sharing",
+      "alt_en": "Two cores writing different counters on the same cache line bounce it back and forth; padding gives each counter its own line",
+      "alt_es": "Dos núcleos que escriben contadores distintos en la misma línea de caché se la pasan de uno a otro; el padding da a cada contador su propia línea",
+      "prompt": "Two panels stacked vertically. Top panel titled 'false sharing': two boxes 'core 0' and 'core 1' at the left and right edges, each with its own small 'L1 cache' box. In the middle, one horizontal cache line drawn as 8 cells labeled 'one 64-byte cache line', with cell 0 labeled 'shard[0]' and cell 1 labeled 'shard[1]'. Core 0 writes shard[0] and core 1 writes shard[1]; a big curved double-headed arrow between the two L1 boxes labeled 'the whole line ping-pongs: invalidate, transfer, repeat'. Bottom panel titled 'padded': two separate cache lines, each containing one shard followed by hatched cells labeled '56 bytes padding', core 0 connected only to the first line and core 1 only to the second, with a teal note 'no sharing: each core keeps its own line'."
+    },
+    {
+      "id": "16-channel",
+      "anchor": "16-goroutines-channels:### A channel operation",
+      "alt_en": "Every channel send takes the channel lock and may wake a goroutine; batching pays that cost once per chunk instead of once per item",
+      "alt_es": "Cada envío por un channel toma el lock del channel y puede despertar una goroutine; agrupar paga ese coste una vez por bloque en lugar de una vez por elemento",
+      "prompt": "Two horizontal lanes. Top lane titled 'one item per send': a 'producer' box on the left sends many tiny boxes one by one through a hand-drawn pipe labeled 'chan' into several 'worker' boxes on the right. Every tiny box crossing the pipe has a small padlock icon and the note 'lock, copy, unlock, wake a goroutine', repeated many times. Bottom lane titled 'one chunk per send': the producer packs items into a few large boxes labeled '[]item (1024 items)' that cross the same pipe, with only a few padlock icons, and the note 'same overhead, paid once per 1024 items', drawn with the teal accent."
+    },
+    {
+      "id": "17-syscalls",
+      "anchor": "17-io-syscalls:### Batching with bufio",
+      "alt_en": "Without a buffer every small write crosses into the kernel; bufio collects them and crosses once per 4 KB",
+      "alt_es": "Sin buffer, cada escritura pequeña cruza al kernel; bufio las acumula y cruza una vez cada 4 KB",
+      "prompt": "A horizontal thick hand-drawn line across the middle of the image, labeled on its left end 'user space' above it and 'kernel' below it. Left half titled 'os.File.Write per record': many small boxes 'record' above the line, each with its own arrow crossing down through the line into a box 'write()' below, with a note '5,000 records = 5,000 syscalls'. Right half titled 'bufio.Writer': the same small record boxes first flow into a larger box above the line labeled 'buffer (4096 bytes)', and only a few arrows cross the line into 'write()', with the teal note '5,000 records = a few dozen syscalls'. A small warning note near the buffer: 'don't forget Flush()'."
+    },
+    {
+      "id": "18-pgo-loop",
+      "anchor": "18-pgo:## The Concept: Feeding the Profile to the Compiler",
+      "alt_en": "PGO: build, run under real load, collect a CPU profile, and rebuild with it so the compiler optimizes the hot paths",
+      "alt_es": "PGO: compila, ejecuta con carga real, captura un perfil de CPU y recompila con él para que el compilador optimice las rutas calientes",
+      "prompt": "A circular loop of four hand-drawn boxes connected by clockwise arrows: '1. go build', '2. run with real traffic', '3. collect CPU profile (pprof)', '4. save as default.pgo next to main', and an arrow back to '1. go build'. Inside the loop, a teal-accented box labeled 'compiler with a profile' listing three hand-lettered bullet points: 'hot calls: inline budget 80 -> 2000', 'hot interface calls: devirtualize', 'hot code: better block layout'."
+    }
+  ]
+}

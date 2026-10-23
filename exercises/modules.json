@@ -1,0 +1,291 @@
+{
+  "parts": [
+    {
+      "id": "measure",
+      "en": "Part I · Measure first",
+      "es": "Parte I · Primero, medir"
+    },
+    {
+      "id": "allocations",
+      "en": "Part II · Allocations and the compiler",
+      "es": "Parte II · Asignaciones y el compilador"
+    },
+    {
+      "id": "hardware",
+      "en": "Part III · Memory and the hardware",
+      "es": "Parte III · La memoria y el hardware"
+    },
+    {
+      "id": "runtime",
+      "en": "Part IV · The GC and the runtime",
+      "es": "Parte IV · El GC y el runtime"
+    },
+    {
+      "id": "together",
+      "en": "Part V · Putting it all together",
+      "es": "Parte V · Juntándolo todo"
+    }
+  ],
+  "modules": [
+    {
+      "slug": "00-introduction-setup",
+      "part": "measure",
+      "enabled": true,
+      "en": {
+        "title": "Introduction and Setup",
+        "description": "What mechanical sympathy means, how the workshop is organized, and how to prepare your environment."
+      },
+      "es": {
+        "title": "Introducción y Configuración",
+        "description": "Qué significa la simpatía mecánica, cómo está organizado el workshop y cómo preparar tu entorno."
+      }
+    },
+    {
+      "slug": "01-benchmarking",
+      "part": "measure",
+      "enabled": true,
+      "en": {
+        "title": "Benchmarking 101",
+        "description": "Write benchmarks that measure what you think they measure, and compare results with benchstat."
+      },
+      "es": {
+        "title": "Benchmarking 101",
+        "description": "Escribe benchmarks que midan lo que crees que miden y compara resultados con benchstat."
+      }
+    },
+    {
+      "slug": "02-profiling",
+      "part": "measure",
+      "enabled": true,
+      "en": {
+        "title": "Profiling 101",
+        "description": "Learn how the CPU and heap profilers sample your program, and use pprof to find the hot spot."
+      },
+      "es": {
+        "title": "Profiling 101",
+        "description": "Aprende cómo los profilers de CPU y heap muestrean tu programa y usa pprof para encontrar el punto caliente."
+      }
+    },
+    {
+      "slug": "03-preallocation",
+      "part": "allocations",
+      "enabled": true,
+      "en": {
+        "title": "Pre-allocation",
+        "description": "Watch growslice copy your data over and over, then size slices and maps up front."
+      },
+      "es": {
+        "title": "Pre-asignación",
+        "description": "Observa cómo growslice copia tus datos una y otra vez, y dimensiona slices y maps desde el principio."
+      }
+    },
+    {
+      "slug": "04-strings-bytes",
+      "part": "allocations",
+      "enabled": true,
+      "en": {
+        "title": "Strings and Bytes",
+        "description": "Immutable strings, hidden copies in conversions, and the compiler tricks that avoid them."
+      },
+      "es": {
+        "title": "Strings y Bytes",
+        "description": "Strings inmutables, copias ocultas en las conversiones y los trucos del compilador que las evitan."
+      }
+    },
+    {
+      "slug": "05-escape-analysis",
+      "part": "allocations",
+      "enabled": true,
+      "en": {
+        "title": "Escape Analysis",
+        "description": "Learn how the compiler decides between stack and heap, and keep your values on the stack."
+      },
+      "es": {
+        "title": "Escape Analysis",
+        "description": "Cómo decide el compilador entre stack y heap, y cómo mantener tus valores en el stack."
+      }
+    },
+    {
+      "slug": "06-inlining",
+      "part": "allocations",
+      "enabled": true,
+      "en": {
+        "title": "Inlining",
+        "description": "See the inlining budget and cost model at work, and get a hot function under the budget."
+      },
+      "es": {
+        "title": "Inlining",
+        "description": "El presupuesto de inlining y su modelo de coste: consigue que una función caliente quepa en él."
+      }
+    },
+    {
+      "slug": "07-inlining-escape",
+      "part": "allocations",
+      "enabled": true,
+      "en": {
+        "title": "Inlining × Escape Analysis",
+        "description": "Inlining moves allocation decisions into the caller. Use the outlined-constructor pattern to remove allocations."
+      },
+      "es": {
+        "title": "Inlining × Escape Analysis",
+        "description": "El inlining mueve la decisión de asignar al llamador. Usa el patrón del constructor «outlined» para eliminar asignaciones."
+      }
+    },
+    {
+      "slug": "08-interfaces-boxing",
+      "part": "allocations",
+      "enabled": true,
+      "en": {
+        "title": "Interfaces, Boxing and Generics",
+        "description": "itabs, convT allocations, devirtualization and GC-shape stenciling: what an interface really costs."
+      },
+      "es": {
+        "title": "Interfaces, Boxing y Genéricos",
+        "description": "itabs, asignaciones convT, desvirtualización y GC-shape stenciling: lo que cuesta de verdad una interfaz."
+      }
+    },
+    {
+      "slug": "09-struct-layout",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "Struct Layout and Size Classes",
+        "description": "Alignment, padding and allocator size classes. Reorder fields and drop a size class."
+      },
+      "es": {
+        "title": "Layout de Structs y Clases de Tamaño",
+        "description": "Alineamiento, padding y clases de tamaño del allocator. Reordena campos y baja de clase."
+      }
+    },
+    {
+      "slug": "10-cpu-caches",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "CPU Caches and Data Locality",
+        "description": "Cache lines, prefetchers and pointer chasing: lay out your data the way the CPU likes to read it."
+      },
+      "es": {
+        "title": "Cachés de CPU y Localidad de Datos",
+        "description": "Líneas de caché, prefetchers y persecución de punteros: organiza tus datos como a la CPU le gusta leerlos."
+      }
+    },
+    {
+      "slug": "11-bounds-check-elimination",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "Bounds Check Elimination",
+        "description": "See how the SSA prove pass removes bounds checks, and give it the hints it needs."
+      },
+      "es": {
+        "title": "Eliminación de Bounds Checks",
+        "description": "Cómo el pase prove de SSA elimina comprobaciones de límites, y cómo darle las pistas que necesita."
+      }
+    },
+    {
+      "slug": "12-branch-prediction",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "Branch Prediction",
+        "description": "Pipelines, mispredictions and CMOV: why sorted data runs faster, and how to go branchless."
+      },
+      "es": {
+        "title": "Predicción de Saltos",
+        "description": "Pipelines, predicciones fallidas y CMOV: por qué los datos ordenados van más rápido y cómo eliminar saltos."
+      }
+    },
+    {
+      "slug": "13-sync-pool",
+      "part": "runtime",
+      "enabled": true,
+      "en": {
+        "title": "sync.Pool",
+        "description": "Per-P caches, the victim cache and GC clearing. Learn when pooling helps and when it hurts."
+      },
+      "es": {
+        "title": "sync.Pool",
+        "description": "Cachés por P, la victim cache y la limpieza en cada GC. Cuándo ayuda reutilizar objetos y cuándo perjudica."
+      }
+    },
+    {
+      "slug": "14-gc-pressure",
+      "part": "runtime",
+      "enabled": true,
+      "en": {
+        "title": "Helping the Garbage Collector",
+        "description": "The pacer, GOGC, GOMEMLIMIT and pointer-free heaps: make the GC's job cheaper."
+      },
+      "es": {
+        "title": "Ayudando al Garbage Collector",
+        "description": "El pacer, GOGC, GOMEMLIMIT y heaps sin punteros: abarata el trabajo del GC."
+      }
+    },
+    {
+      "slug": "15-contention-false-sharing",
+      "part": "runtime",
+      "enabled": true,
+      "en": {
+        "title": "Contention and False Sharing",
+        "description": "Mutexes, atomics, sharding and cache-line ping-pong: make concurrent code scale."
+      },
+      "es": {
+        "title": "Contención y False Sharing",
+        "description": "Mutex, atómicos, sharding y el ping-pong de líneas de caché: haz que el código concurrente escale."
+      }
+    },
+    {
+      "slug": "16-goroutines-channels",
+      "part": "runtime",
+      "enabled": true,
+      "en": {
+        "title": "Goroutines, Channels and the Scheduler",
+        "description": "What a goroutine and a channel operation really cost, and why batching wins."
+      },
+      "es": {
+        "title": "Goroutines, Channels y el Scheduler",
+        "description": "Lo que cuestan realmente una goroutine y una operación sobre un channel, y por qué agrupar trabajo gana."
+      }
+    },
+    {
+      "slug": "17-io-syscalls",
+      "part": "runtime",
+      "enabled": true,
+      "en": {
+        "title": "I/O and Syscalls",
+        "description": "The cost of crossing into the kernel and what the scheduler does meanwhile. Buffer your I/O."
+      },
+      "es": {
+        "title": "I/O y Syscalls",
+        "description": "El coste de entrar en el kernel y lo que hace el scheduler mientras tanto. Usa buffers en tu I/O."
+      }
+    },
+    {
+      "slug": "18-pgo",
+      "part": "together",
+      "enabled": true,
+      "en": {
+        "title": "Profile-Guided Optimization",
+        "description": "Feed a CPU profile back to the compiler for hot-path inlining and devirtualization."
+      },
+      "es": {
+        "title": "Optimización Guiada por Perfiles",
+        "description": "Devuelve un perfil de CPU al compilador para inlining y desvirtualización de las rutas calientes."
+      }
+    },
+    {
+      "slug": "19-capstone",
+      "part": "together",
+      "enabled": true,
+      "en": {
+        "title": "Capstone: Optimize a Log Analyzer",
+        "description": "Profile a realistic program, fix it one step at a time, and back every change with benchstat."
+      },
+      "es": {
+        "title": "Proyecto Final: Optimiza un Analizador de Logs",
+        "description": "Perfila un programa realista, mejóralo paso a paso y respalda cada cambio con benchstat."
+      }
+    }
+  ]
+}
