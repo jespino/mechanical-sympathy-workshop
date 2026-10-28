@@ -18,7 +18,7 @@ import (
 // The reference solution. Same report, byte for byte, but:
 //
 //   - one goroutine, no locks: the per-line work is ~100ns, far too small to
-//     pay for a goroutine and a contended mutex (modules 15, 16)
+//     pay for a goroutine and a contended mutex (modules 13, 16)
 //   - the input is streamed through a bufio.Reader and parsed in place as
 //     []byte: no ReadAll, no strings.Split, no per-line string (04, 17)
 //   - a hand-written parser replaces the regexp and the map[string]any, so

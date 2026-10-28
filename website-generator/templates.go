@@ -49,6 +49,7 @@ const exerciseTemplate = `<!DOCTYPE html>
             <option value="{{.AltLangURL}}">{{.AltLangName}}</option>
           </select>
         </label>
+        <a href="https://github.com/jespino/mechanical-sympathy-workshop" target="_blank"><i class="fab fa-github"></i> {{if eq .Lang "es"}}Repositorio{{else}}Repository{{end}}</a>
       </div>
     </div>
   </nav>
@@ -104,6 +105,7 @@ const indexTemplate = `<!DOCTYPE html>
             <option value="{{.AltLangURL}}">{{.AltLangName}}</option>
           </select>
         </label>
+        <a href="https://github.com/jespino/mechanical-sympathy-workshop" target="_blank"><i class="fab fa-github"></i> {{if eq .Lang "es"}}Repositorio{{else}}Repository{{end}}</a>
       </div>
     </div>
   </nav>
@@ -162,9 +164,10 @@ const indexTemplate = `<!DOCTYPE html>
     <section class="author">
       <h2>{{if eq .Lang "es"}}Autor del workshop{{else}}Workshop author{{end}}</h2>
       <div class="byline">
-        <div class="byline-avatar">JE</div>
+        <img class="byline-avatar" src="{{if ne .CSSPath "styles.css"}}../{{end}}images/author.webp" alt="Jesús Espino">
         <div>
           <strong>Jesús Espino</strong>
+          <span class="byline-role">{{if eq .Lang "es"}}Google Developer Expert en Go{{else}}Go Google Developer Expert{{end}}</span>
           <p>{{if eq .Lang "es"}}Desarrollador de Go con experiencia en sistemas de alto rendimiento y contribuciones a proyectos open source. Apasionado por enseñar cómo funciona Go por dentro y cómo sacarle partido.{{else}}Go practitioner with experience in high-performance systems and open source contributions. Passionate about teaching how Go works under the hood, and how to make the most of it.{{end}}</p>
         </div>
       </div>

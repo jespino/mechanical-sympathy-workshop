@@ -1,7 +1,7 @@
 #!/bin/bash
 # Regenerate module diagrams with codex image generation.
 #
-#   diagrams/generate.sh 09-padding 10-traversal   # regenerate some
+#   diagrams/generate.sh 10-padding 15-traversal   # regenerate some
 #   diagrams/generate.sh                           # regenerate all
 #
 # Each prompt in prompts.json is wrapped with the shared hand-drawn style

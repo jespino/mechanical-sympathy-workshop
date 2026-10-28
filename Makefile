@@ -26,7 +26,7 @@ clean:
 #   make bench LAB=03            benchmark your after.go against before.go
 #   make solution LAB=03         same, but with the reference solution.go
 #   make bench LAB=03 COUNT=10   more runs for less noisy results
-#   make bench LAB=15 CPU=1,4,16 run with several GOMAXPROCS values
+#   make bench LAB=16 CPU=1,4,16 run with several GOMAXPROCS values
 #   make pgo                     module 18: benchmark without PGO, collect a
 #                                CPU profile, rebuild with it and compare
 #   make test-labs               check that every lab builds and passes tests

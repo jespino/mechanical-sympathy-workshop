@@ -938,15 +938,16 @@ strong {
 
 .byline-avatar {
     flex-shrink: 0;
-    width: 4rem;
-    height: 4rem;
+    width: 5rem;
+    height: 5rem;
     border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: var(--brand-gradient);
-    color: white;
-    font-weight: 900;
-    font-size: 1.3rem;
+    object-fit: cover;
+}
+
+.byline-role {
+    display: block;
+    font-weight: 700;
+    color: var(--text-light);
 }
 
 .byline p {

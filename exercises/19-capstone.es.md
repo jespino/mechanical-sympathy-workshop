@@ -102,19 +102,19 @@ benchstat -filter '/impl:after' labs/19-step0.bench.txt labs/19-step1.bench.txt
 
 | Lo que ves en el profile | Causa probable | Módulo |
 |---|---|---|
-| `runtime.mallocgc`, `newobject`, `growslice` altos en `-cum` | Asignaciones por elemento, slices que crecen desde vacío | [03](03-preallocation.md), [14](14-gc-pressure.md) |
-| `gcBgMarkWorker`, `gcDrain`, `scanobject`, `markroot` | Trabajo del GC causado por la tasa de asignación, o punteros que escanear | [14](14-gc-pressure.md) |
-| `stackScanState`, `scanstack`, `lfstack` | El GC escaneando **muchos stacks de goroutines** | [16](16-goroutines-channels.md), [14](14-gc-pressure.md) |
-| `runtime.newproc`, `schedule`, `findRunnable`, `gopark` | Goroutines demasiado pequeñas para lo que cuestan | [16](16-goroutines-channels.md) |
-| `sync.(*Mutex).Lock`, `lock2`, `futex`, `procyield` | Contención de locks | [15](15-contention-false-sharing.md) |
+| `runtime.mallocgc`, `newobject`, `growslice` altos en `-cum` | Asignaciones por elemento, slices que crecen desde vacío | [03](03-preallocation.md), [12](12-gc-pressure.md) |
+| `gcBgMarkWorker`, `gcDrain`, `scanobject`, `markroot` | Trabajo del GC causado por la tasa de asignación, o punteros que escanear | [12](12-gc-pressure.md) |
+| `stackScanState`, `scanstack`, `lfstack` | El GC escaneando **muchos stacks de goroutines** | [13](13-goroutines-channels.md), [12](12-gc-pressure.md) |
+| `runtime.newproc`, `schedule`, `findRunnable`, `gopark` | Goroutines demasiado pequeñas para lo que cuestan | [13](13-goroutines-channels.md) |
+| `sync.(*Mutex).Lock`, `lock2`, `futex`, `procyield` | Contención de locks | [16](16-contention-false-sharing.md) |
 | `regexp.(*Regexp).doOnePass`, `doExecute`, `backtrack` | Regexp en el camino caliente | [04](04-strings-bytes.md) |
 | `strings.genSplit`, `Join`, `ToLower`, `slicebytetostring`, `concatstrings` | Copias de strings y strings temporales por elemento | [04](04-strings-bytes.md) |
 | `fmt.Sprintf`, `fmt.(*pp).doPrintf`, `convT64`, `convTstring` | fmt y boxing en interfaces | [04](04-strings-bytes.md), [08](08-interfaces-boxing.md) |
 | `runtime.assertE2I`, `typeAssert`, `map[string]any` | Tipado dinámico en el camino caliente | [08](08-interfaces-boxing.md) |
 | `sort.Slice`, `reflectlite.Swapper`, `sort.(*lessSwap)` | Ordenación basada en reflexión con closures | [08](08-interfaces-boxing.md) |
-| `mapaccess*`, `mapassign*` | Demasiadas operaciones sobre maps, o maps donde bastaría un array | [03](03-preallocation.md), [09](09-struct-layout.md) |
+| `mapaccess*`, `mapassign*` | Demasiadas operaciones sobre maps, o maps donde bastaría un array | [03](03-preallocation.md), [10](10-struct-layout.md) |
 | `time.Parse`, `strconv` | Trabajo de parsing que no hace falta para el resultado | este módulo |
-| `syscall.Syscall`, `internal/poll.(*FD).Write` | I/O sin buffer | [17](17-io-syscalls.md) |
+| `syscall.Syscall`, `internal/poll.(*FD).Write` | I/O sin buffer | [14](14-io-syscalls.md) |
 | Funciones pequeñas justo por encima del presupuesto de inlining en el bucle caliente | Coste de las llamadas, escapes que el inlining eliminaría | [06](06-inlining.md), [07](07-inlining-escape.md), [18](18-pgo.md) |
 
 Fíjate también en la línea de cabecera de `go tool pprof -top`: `Duration: 1.05s, Total samples = 7.65s` significa que el programa mantuvo ocupados ~7,3 cores. El wall time es lo que mide `sec/op`, pero el tiempo de CPU es lo que mide tu factura del cloud.

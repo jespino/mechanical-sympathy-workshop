@@ -10,7 +10,7 @@ package capstone
 // Start with a profile, not with this list. But here is the workshop's
 // checklist of things that look suspicious in this file:
 //
-// TODO: one goroutine per line, all fighting over one mutex (modules 15, 16)
+// TODO: one goroutine per line, all fighting over one mutex (modules 13, 16)
 // TODO: a regexp and a map[string]any per line (modules 04, 08, 14)
 // TODO: time.Parse on every line, just to find the first and last timestamp
 // TODO: io.ReadAll + strings.Split(string(data)): two full copies (04)

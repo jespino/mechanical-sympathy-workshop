@@ -20,7 +20,7 @@ Each goroutine has a stack. A function's local variables live in its **stack fra
 
 ![Values that don't outlive their function stay on the stack; values referenced after the function returns escape to the heap](images/05-stack-heap.webp)
 
-The heap is different. A heap allocation goes through `runtime.mallocgc` (size classes, per-P caches, sometimes locks and page allocation). Since Go 1.27, a small `new(T)`/`&T{}` (up to 80 bytes) calls a size-specialized copy of it instead, like `mallocgcSmallScanNoHeaderSC5`: cheaper, but the same kind of work. The memory has to be found and freed later by the garbage collector, and all of that is work your program pays for (we'll measure GC costs in [GC Pressure](14-gc-pressure.md)).
+The heap is different. A heap allocation goes through `runtime.mallocgc` (size classes, per-P caches, sometimes locks and page allocation). Since Go 1.27, a small `new(T)`/`&T{}` (up to 80 bytes) calls a size-specialized copy of it instead, like `mallocgcSmallScanNoHeaderSC5`: cheaper, but the same kind of work. The memory has to be found and freed later by the garbage collector, and all of that is work your program pays for (we'll measure GC costs in [GC Pressure](12-gc-pressure.md)).
 
 So why doesn't Go put everything on the stack? Because a stack frame dies when its function returns. If a pointer to a local value can **outlive the frame**, the value must go to the heap. The compiler pass that proves which values can safely stay on the stack is **escape analysis**.
 

@@ -102,19 +102,19 @@ benchstat -filter '/impl:after' labs/19-step0.bench.txt labs/19-step1.bench.txt
 
 | What you see in the profile | Likely cause | Module |
 |---|---|---|
-| `runtime.mallocgc`, `newobject`, `growslice` high in `-cum` | Allocations per item, slices growing from empty | [03](03-preallocation.md), [14](14-gc-pressure.md) |
-| `gcBgMarkWorker`, `gcDrain`, `scanobject`, `markroot` | GC work caused by allocation rate, or pointers to scan | [14](14-gc-pressure.md) |
-| `stackScanState`, `scanstack`, `lfstack` | The GC scanning **many goroutine stacks** | [16](16-goroutines-channels.md), [14](14-gc-pressure.md) |
-| `runtime.newproc`, `schedule`, `findRunnable`, `gopark` | Goroutines that are too small for their cost | [16](16-goroutines-channels.md) |
-| `sync.(*Mutex).Lock`, `lock2`, `futex`, `procyield` | Lock contention | [15](15-contention-false-sharing.md) |
+| `runtime.mallocgc`, `newobject`, `growslice` high in `-cum` | Allocations per item, slices growing from empty | [03](03-preallocation.md), [12](12-gc-pressure.md) |
+| `gcBgMarkWorker`, `gcDrain`, `scanobject`, `markroot` | GC work caused by allocation rate, or pointers to scan | [12](12-gc-pressure.md) |
+| `stackScanState`, `scanstack`, `lfstack` | The GC scanning **many goroutine stacks** | [13](13-goroutines-channels.md), [12](12-gc-pressure.md) |
+| `runtime.newproc`, `schedule`, `findRunnable`, `gopark` | Goroutines that are too small for their cost | [13](13-goroutines-channels.md) |
+| `sync.(*Mutex).Lock`, `lock2`, `futex`, `procyield` | Lock contention | [16](16-contention-false-sharing.md) |
 | `regexp.(*Regexp).doOnePass`, `doExecute`, `backtrack` | Regexp on the hot path | [04](04-strings-bytes.md) |
 | `strings.genSplit`, `Join`, `ToLower`, `slicebytetostring`, `concatstrings` | String copies and per-item temporary strings | [04](04-strings-bytes.md) |
 | `fmt.Sprintf`, `fmt.(*pp).doPrintf`, `convT64`, `convTstring` | fmt and interface boxing | [04](04-strings-bytes.md), [08](08-interfaces-boxing.md) |
 | `runtime.assertE2I`, `typeAssert`, `map[string]any` | Dynamic typing on the hot path | [08](08-interfaces-boxing.md) |
 | `sort.Slice`, `reflectlite.Swapper`, `sort.(*lessSwap)` | Reflection-based sorting with closures | [08](08-interfaces-boxing.md) |
-| `mapaccess*`, `mapassign*` | Too many map operations, or maps where an array would do | [03](03-preallocation.md), [09](09-struct-layout.md) |
+| `mapaccess*`, `mapassign*` | Too many map operations, or maps where an array would do | [03](03-preallocation.md), [10](10-struct-layout.md) |
 | `time.Parse`, `strconv` | Parsing work that isn't needed for the result | this module |
-| `syscall.Syscall`, `internal/poll.(*FD).Write` | Unbuffered I/O | [17](17-io-syscalls.md) |
+| `syscall.Syscall`, `internal/poll.(*FD).Write` | Unbuffered I/O | [14](14-io-syscalls.md) |
 | Small functions just over the inlining budget in the hot loop | Call overhead, escapes that inlining would remove | [06](06-inlining.md), [07](07-inlining-escape.md), [18](18-pgo.md) |
 
 Also look at the header line of `go tool pprof -top`: `Duration: 1.05s, Total samples = 7.65s` means the program kept ~7.3 cores busy. Wall time is what `sec/op` measures, but CPU time is what your cloud bill measures.

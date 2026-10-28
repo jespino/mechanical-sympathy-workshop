@@ -54,7 +54,7 @@ for {
 
 ![Each time append runs out of capacity, growslice allocates a bigger array, copies everything and leaves the old one as garbage](images/03-growslice.webp)
 
-Small slices double. Bigger slices grow by a factor that slides smoothly from 2x down toward 1.25x. Then `growslice` rounds the requested byte size **up to the next allocator size class** (we'll study size classes in [Struct Layout and Size Classes](09-struct-layout.md)), which is why the capacities you observe are not the exact output of the formula.
+Small slices double. Bigger slices grow by a factor that slides smoothly from 2x down toward 1.25x. Then `growslice` rounds the requested byte size **up to the next allocator size class** (we'll study size classes in [Struct Layout and Size Classes](10-struct-layout.md)), which is why the capacities you observe are not the exact output of the formula.
 
 Let's watch it happen. The lab includes a small program that prints every reallocation:
 

@@ -54,7 +54,7 @@ for {
 
 ![Cada vez que append se queda sin capacidad, growslice reserva un array más grande, copia todo y deja el viejo como basura](images/03-growslice.webp)
 
-Los slices pequeños duplican su tamaño. Los más grandes crecen por un factor que baja suavemente de 2x hacia 1.25x. Después, `growslice` redondea el número de bytes pedido **hacia arriba hasta la siguiente clase de tamaño del allocator** (estudiaremos las clases de tamaño en [Layout de Structs y Clases de Tamaño](09-struct-layout.md)), y por eso las capacidades que observas no son exactamente las que da la fórmula.
+Los slices pequeños duplican su tamaño. Los más grandes crecen por un factor que baja suavemente de 2x hacia 1.25x. Después, `growslice` redondea el número de bytes pedido **hacia arriba hasta la siguiente clase de tamaño del allocator** (estudiaremos las clases de tamaño en [Layout de Structs y Clases de Tamaño](10-struct-layout.md)), y por eso las capacidades que observas no son exactamente las que da la fórmula.
 
 Veámoslo en acción. El laboratorio incluye un pequeño programa que imprime cada realocación:
 

@@ -19,16 +19,16 @@ El workshop va en **crescendo**. Empezamos con las herramientas para medir, segu
 | Parte | Módulos | Qué aprenderás |
 |---|---|---|
 | I · Primero, medir | 0–2 | Benchmarks que no mienten, `benchstat` y `pprof` |
-| II · Asignaciones y el compilador | 3–8 | Pre-asignación, strings, escape analysis, inlining, interfaces |
-| III · La memoria y el hardware | 9–12 | Layout de structs, cachés de CPU, bounds checks, predicción de saltos |
-| IV · El GC y el runtime | 13–17 | `sync.Pool`, presión sobre el GC, contención, el scheduler, syscalls |
+| II · Asignaciones y el compilador | 3–9 | Pre-asignación, strings, escape analysis, inlining, interfaces, bounds checks |
+| III · El GC y el runtime | 10–14 | Layout de structs y clases de tamaño, `sync.Pool`, presión sobre el GC, el scheduler, syscalls |
+| IV · La memoria y el hardware | 15–17 | Cachés de CPU, contención y false sharing, predicción de saltos |
 | V · Juntándolo todo | 18–19 | PGO y un proyecto final de optimización |
 
-Todos los módulos siguen el mismo ciclo, que es también el que deberías usar en la vida real:
+Todos los laboratorios siguen el mismo ciclo, que es también el que deberías usar en la vida real:
 
 ![El ciclo del workshop: medir, entender por qué, cambiar una cosa, volver a medir](images/00-loop.webp)
 
-El paso central es el corazón de cada módulo. Abrimos el código fuente de Go (el compilador, el runtime, la librería estándar) y miramos el mecanismo que hace lenta la versión lenta. Cuando entiendes el *por qué*, la solución suele ser evidente, y reconocerás el mismo patrón en código que no has visto nunca.
+El paso central es el corazón de cada módulo. Miramos el mecanismo que hace lenta la versión lenta: normalmente en el código fuente de Go (el compilador, el runtime, la librería estándar), y en la Parte IV en el propio hardware, con contadores de rendimiento. Cuando entiendes el *por qué*, la solución suele ser evidente, y reconocerás el mismo patrón en código que no has visto nunca.
 
 > **Una advertencia.** Todo en este workshop trata sobre código *caliente*. La mayoría del código no lo es. Por defecto gana la legibilidad, y solo la cambias por velocidad donde un perfil te diga que merece la pena. La Parte I existe precisamente para que nunca optimices a ciegas.
 
@@ -48,40 +48,12 @@ go version go1.27.3 linux/amd64
 
 Cualquier versión 1.27.x vale. **No** necesitas compilar Go desde el código fuente: todo el workshop usa el toolchain estándar.
 
-> **¿Tienes un Go más antiguo?** Con el valor por defecto `GOTOOLCHAIN=auto`, cualquier Go desde la 1.21 cambia solo a la versión correcta: `labs/go.mod` dice `go 1.27`, así que el primer comando `go` que ejecutes dentro de `labs/` descarga Go 1.27 y lo usa a partir de entonces. Compruébalo con `cd labs && go version`.
-
-Echa un vistazo a dónde vive el código fuente de Go. Leeremos ficheros de ahí en todos los módulos:
-
-```bash
-ls $(go env GOROOT)/src/runtime | head
-```
-
 ## Paso 2: Descarga el Código del Workshop
 
 ```bash
-git clone <workshop-repo-url> mechanical-sympathy
-cd mechanical-sympathy
+git clone https://github.com/jespino/mechanical-sympathy-workshop.git
+cd mechanical-sympathy-workshop
 ```
-
-El directorio interesante es `labs/`, un único módulo de Go con un paquete por cada módulo del workshop:
-
-```
-labs/
-  go.mod
-  03-preallocation/
-    before.go      la versión ingenua (la referencia, no la edites)
-    after.go       TU versión: empieza siendo una copia de before.go
-    solution.go    una solución de referencia (solo se compila con -tags solution)
-    lab_test.go    tests de corrección + benchmarks
-  ...
-```
-
-Las convenciones son las mismas en todos los laboratorios:
-
-- `before.go` y `after.go` contienen las mismas funciones con los sufijos `Before` / `After`. Solo editas `after.go`.
-- `after.go` tiene la restricción de compilación `//go:build !solution` y `solution.go` tiene `//go:build solution`, así que se compila exactamente uno de los dos. Así puedes comparar tu intento con la referencia sin mover ficheros.
-- Cada benchmark tiene dos sub-benchmarks, `impl=before` e `impl=after`, para que `benchstat` los muestre uno al lado del otro.
-- Algunos laboratorios (benchmarking, profiling, PGO) necesitan una estructura algo distinta, y su página lo explica.
 
 ## Paso 3: Instala las Herramientas
 
@@ -109,7 +81,7 @@ brew install graphviz
 
 ### perf (opcional, solo Linux)
 
-En la Parte III usamos contadores hardware de rendimiento (fallos de caché, fallos de predicción de saltos) para *demostrar* lo que pasa dentro de la CPU. La herramienta es `perf`:
+En la Parte IV usamos contadores hardware de rendimiento (fallos de caché, fallos de predicción de saltos) para *demostrar* lo que pasa dentro de la CPU. La herramienta es `perf`:
 
 ```bash
 # Debian/Ubuntu
@@ -164,22 +136,3 @@ Los benchmarks miden tu código *más todo lo demás que esté haciendo tu máqu
 - **Mejor en bare metal.** Las VMs y los runners de CI comparten CPU con vecinos ruidosos.
 
 Nunca tendrás cero ruido, y por eso siempre ejecutaremos los benchmarks varias veces y dejaremos que `benchstat` nos diga si una diferencia es real.
-
-## Referencia de Comandos Útiles
-
-| Comando | Qué hace |
-|---|---|
-| `make bench LAB=NN` | Compara tu `after.go` con `before.go` |
-| `make solution LAB=NN` | Lo mismo, usando la referencia `solution.go` |
-| `make bench LAB=NN COUNT=10` | Más repeticiones, para menos ruido |
-| `make bench LAB=NN BENCH=Squares` | Ejecuta solo los benchmarks que casen con una regexp |
-| `make test-labs` | Comprueba que todos los laboratorios compilan y pasan sus tests |
-| `go build -gcflags=-m ./NN-nombre/` | Pregunta al compilador por sus decisiones de inlining y escape |
-| `go tool pprof -http=: cpu.prof` | Explora un perfil en el navegador |
-
-## Puntos Clave
-
-- La simpatía mecánica consiste en colaborar con el **compilador**, el **runtime** y el **hardware**
-- Todos los módulos siguen el ciclo **medir → entender por qué → cambiar una cosa → volver a medir**
-- Editas `after.go`, comparas con `before.go` y puedes mirar `solution.go` con `-tags solution`
-- Optimiza solo lo que una medición te diga que es caliente, y mantén tu máquina tranquila mientras mides

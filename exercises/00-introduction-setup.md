@@ -19,16 +19,16 @@ The workshop is a **crescendo**. We start with the tools to measure, then the si
 | Part | Modules | What you'll learn |
 |---|---|---|
 | I · Measure first | 0–2 | Benchmarks that don't lie, `benchstat`, and `pprof` |
-| II · Allocations and the compiler | 3–8 | Pre-allocation, strings, escape analysis, inlining, interfaces |
-| III · Memory and the hardware | 9–12 | Struct layout, CPU caches, bounds checks, branch prediction |
-| IV · The GC and the runtime | 13–17 | `sync.Pool`, GC pressure, contention, the scheduler, syscalls |
+| II · Allocations and the compiler | 3–9 | Pre-allocation, strings, escape analysis, inlining, interfaces, bounds checks |
+| III · The GC and the runtime | 10–14 | Struct layout and size classes, `sync.Pool`, GC pressure, the scheduler, syscalls |
+| IV · Memory and the hardware | 15–17 | CPU caches, contention and false sharing, branch prediction |
 | V · Putting it all together | 18–19 | PGO and a capstone optimization project |
 
-Every module follows the same loop, which is also the loop you should use in real life:
+Every lab follows the same loop, which is also the loop you should use in real life:
 
 ![The workshop loop: measure, understand why, change one thing, measure again](images/00-loop.webp)
 
-The middle step is the heart of each module. We open the Go source code (the compiler, the runtime, the standard library) and look at the mechanism that makes the slow version slow. Once you understand the *why*, the fix is usually obvious, and you'll recognize the same pattern in code you've never seen before.
+The middle step is the heart of each module. We look at the mechanism that makes the slow version slow: usually in the Go source code (the compiler, the runtime, the standard library), and in Part IV in the hardware itself, with performance counters. Once you understand the *why*, the fix is usually obvious, and you'll recognize the same pattern in code you've never seen before.
 
 > **A word of caution.** Everything in this workshop is about *hot* code. Most code isn't hot. Readability wins by default, and you trade it for speed only where a profile tells you to. Part I exists precisely so that you never optimize blind.
 
@@ -48,40 +48,12 @@ go version go1.27.3 linux/amd64
 
 Any 1.27.x patch release is fine. You do **not** need to build Go from source: everything in this workshop uses the stock toolchain.
 
-> **Stuck on an older Go?** With the default `GOTOOLCHAIN=auto`, any Go since 1.21 switches to the right version by itself: `labs/go.mod` says `go 1.27`, so the first `go` command you run inside `labs/` downloads Go 1.27 and uses it from then on. Check with `cd labs && go version`.
-
-Have a look at where the Go source code lives. We'll read files from it in every module:
-
-```bash
-ls $(go env GOROOT)/src/runtime | head
-```
-
 ## Step 2: Get the Workshop Code
 
 ```bash
-git clone <workshop-repo-url> mechanical-sympathy
-cd mechanical-sympathy
+git clone https://github.com/jespino/mechanical-sympathy-workshop.git
+cd mechanical-sympathy-workshop
 ```
-
-The interesting directory is `labs/`, a single Go module with one package per module:
-
-```
-labs/
-  go.mod
-  03-preallocation/
-    before.go      the naive version (the baseline, don't edit)
-    after.go       YOUR version: starts as a copy of before.go
-    solution.go    a reference solution (only built with -tags solution)
-    lab_test.go    correctness tests + benchmarks
-  ...
-```
-
-The conventions are the same in every lab:
-
-- `before.go` and `after.go` contain the same functions with `Before` / `After` suffixes. You only ever edit `after.go`.
-- `after.go` has the build constraint `//go:build !solution` and `solution.go` has `//go:build solution`, so exactly one of them is compiled. That's how you can compare your attempt with the reference without copying files around.
-- Every benchmark has two sub-benchmarks, `impl=before` and `impl=after`, so `benchstat` can show them side by side.
-- A few labs (benchmarking, profiling, PGO) need a slightly different structure, and their pages explain it.
 
 ## Step 3: Install the Tools
 
@@ -109,7 +81,7 @@ brew install graphviz
 
 ### perf (optional, Linux only)
 
-In Part III we use hardware performance counters (cache misses, branch misses) to *prove* what is happening inside the CPU. The tool for that is `perf`:
+In Part IV we use hardware performance counters (cache misses, branch misses) to *prove* what is happening inside the CPU. The tool for that is `perf`:
 
 ```bash
 # Debian/Ubuntu
@@ -164,22 +136,3 @@ Benchmarks measure your code *plus everything else your machine is doing*. To ge
 - **Prefer bare metal.** VMs and CI runners share CPUs with noisy neighbours.
 
 You'll never get zero noise, which is why we'll always run benchmarks several times and let `benchstat` tell us whether a difference is real.
-
-## Useful Commands Reference
-
-| Command | What it does |
-|---|---|
-| `make bench LAB=NN` | Benchmark your `after.go` against `before.go` |
-| `make solution LAB=NN` | Same, using the reference `solution.go` |
-| `make bench LAB=NN COUNT=10` | More repetitions, for less noise |
-| `make bench LAB=NN BENCH=Squares` | Run only benchmarks matching a regexp |
-| `make test-labs` | Check that every lab builds and passes its tests |
-| `go build -gcflags=-m ./NN-name/` | Ask the compiler about inlining and escape decisions |
-| `go tool pprof -http=: cpu.prof` | Explore a profile in the browser |
-
-## Key Takeaways
-
-- Mechanical sympathy means cooperating with the **compiler**, the **runtime** and the **hardware**
-- Every module follows the loop **measure → understand why → change one thing → measure again**
-- You edit `after.go`, compare against `before.go`, and peek at `solution.go` with `-tags solution`
-- Only optimize what a measurement tells you is hot, and keep your machine quiet while you measure

@@ -11,14 +11,14 @@
       "es": "Parte II · Asignaciones y el compilador"
     },
     {
-      "id": "hardware",
-      "en": "Part III · Memory and the hardware",
-      "es": "Parte III · La memoria y el hardware"
+      "id": "runtime",
+      "en": "Part III · The GC and the runtime",
+      "es": "Parte III · El GC y el runtime"
     },
     {
-      "id": "runtime",
-      "en": "Part IV · The GC and the runtime",
-      "es": "Parte IV · El GC y el runtime"
+      "id": "hardware",
+      "en": "Part IV · Memory and the hardware",
+      "es": "Parte IV · La memoria y el hardware"
     },
     {
       "id": "together",
@@ -145,34 +145,8 @@
       }
     },
     {
-      "slug": "09-struct-layout",
-      "part": "hardware",
-      "enabled": true,
-      "en": {
-        "title": "Struct Layout and Size Classes",
-        "description": "Alignment, padding and allocator size classes. Reorder fields and drop a size class."
-      },
-      "es": {
-        "title": "Layout de Structs y Clases de Tamaño",
-        "description": "Alineamiento, padding y clases de tamaño del allocator. Reordena campos y baja de clase."
-      }
-    },
-    {
-      "slug": "10-cpu-caches",
-      "part": "hardware",
-      "enabled": true,
-      "en": {
-        "title": "CPU Caches and Data Locality",
-        "description": "Cache lines, prefetchers and pointer chasing: lay out your data the way the CPU likes to read it."
-      },
-      "es": {
-        "title": "Cachés de CPU y Localidad de Datos",
-        "description": "Líneas de caché, prefetchers y persecución de punteros: organiza tus datos como a la CPU le gusta leerlos."
-      }
-    },
-    {
-      "slug": "11-bounds-check-elimination",
-      "part": "hardware",
+      "slug": "09-bounds-check-elimination",
+      "part": "allocations",
       "enabled": true,
       "en": {
         "title": "Bounds Check Elimination",
@@ -184,20 +158,20 @@
       }
     },
     {
-      "slug": "12-branch-prediction",
-      "part": "hardware",
+      "slug": "10-struct-layout",
+      "part": "runtime",
       "enabled": true,
       "en": {
-        "title": "Branch Prediction",
-        "description": "Pipelines, mispredictions and CMOV: why sorted data runs faster, and how to go branchless."
+        "title": "Struct Layout and Size Classes",
+        "description": "Alignment, padding and allocator size classes. Reorder fields and drop a size class."
       },
       "es": {
-        "title": "Predicción de Saltos",
-        "description": "Pipelines, predicciones fallidas y CMOV: por qué los datos ordenados van más rápido y cómo eliminar saltos."
+        "title": "Layout de Structs y Clases de Tamaño",
+        "description": "Alineamiento, padding y clases de tamaño del allocator. Reordena campos y baja de clase."
       }
     },
     {
-      "slug": "13-sync-pool",
+      "slug": "11-sync-pool",
       "part": "runtime",
       "enabled": true,
       "en": {
@@ -210,7 +184,7 @@
       }
     },
     {
-      "slug": "14-gc-pressure",
+      "slug": "12-gc-pressure",
       "part": "runtime",
       "enabled": true,
       "en": {
@@ -223,20 +197,7 @@
       }
     },
     {
-      "slug": "15-contention-false-sharing",
-      "part": "runtime",
-      "enabled": true,
-      "en": {
-        "title": "Contention and False Sharing",
-        "description": "Mutexes, atomics, sharding and cache-line ping-pong: make concurrent code scale."
-      },
-      "es": {
-        "title": "Contención y False Sharing",
-        "description": "Mutex, atómicos, sharding y el ping-pong de líneas de caché: haz que el código concurrente escale."
-      }
-    },
-    {
-      "slug": "16-goroutines-channels",
+      "slug": "13-goroutines-channels",
       "part": "runtime",
       "enabled": true,
       "en": {
@@ -249,7 +210,7 @@
       }
     },
     {
-      "slug": "17-io-syscalls",
+      "slug": "14-io-syscalls",
       "part": "runtime",
       "enabled": true,
       "en": {
@@ -259,6 +220,45 @@
       "es": {
         "title": "I/O y Syscalls",
         "description": "El coste de entrar en el kernel y lo que hace el scheduler mientras tanto. Usa buffers en tu I/O."
+      }
+    },
+    {
+      "slug": "15-cpu-caches",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "CPU Caches and Data Locality",
+        "description": "Cache lines, prefetchers and pointer chasing: lay out your data the way the CPU likes to read it."
+      },
+      "es": {
+        "title": "Cachés de CPU y Localidad de Datos",
+        "description": "Líneas de caché, prefetchers y persecución de punteros: organiza tus datos como a la CPU le gusta leerlos."
+      }
+    },
+    {
+      "slug": "16-contention-false-sharing",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "Contention and False Sharing",
+        "description": "Mutexes, atomics, sharding and cache-line ping-pong: make concurrent code scale."
+      },
+      "es": {
+        "title": "Contención y False Sharing",
+        "description": "Mutex, atómicos, sharding y el ping-pong de líneas de caché: haz que el código concurrente escale."
+      }
+    },
+    {
+      "slug": "17-branch-prediction",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "Branch Prediction",
+        "description": "Pipelines, mispredictions and CMOV: why sorted data runs faster, and how to go branchless."
+      },
+      "es": {
+        "title": "Predicción de Saltos",
+        "description": "Pipelines, predicciones fallidas y CMOV: por qué los datos ordenados van más rápido y cómo eliminar saltos."
       }
     },
     {
