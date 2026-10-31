@@ -55,7 +55,9 @@ make bench LAB=16
 
 Lee los tres bucles de `before.go`. Pregúntate: ¿el siguiente valor está al lado del actual o en otro lugar de la memoria? ¿Usa el bucle todos los campos que carga?
 
-Opcional en Linux: después del cambio, compara los fallos de caché de las dos versiones:
+Opcional en Linux: después del cambio, compara los fallos de caché de las dos versiones.
+
+> **¿Necesitas `perf`?** Solo existe en Linux. Instálalo con `sudo apt install linux-tools-common linux-tools-$(uname -r)` (Debian/Ubuntu) o `sudo dnf install perf` (Fedora). Si `perf stat true` falla con un error de permisos, ejecuta `sudo sysctl kernel.perf_event_paranoid=1`. En macOS, Windows, o una VM o contenedor sin contadores hardware, sáltate este paso.
 
 ```bash
 (cd labs && go test -c -o caches.test ./16-cpu-caches/)

@@ -55,7 +55,9 @@ make bench LAB=16
 
 Read the three loops in `before.go`. Ask: is the next value beside the current one, or somewhere else in memory? Does the loop use all the fields it loads?
 
-Optional on Linux: after the fix, compare cache misses for the two versions:
+Optional on Linux: after the fix, compare cache misses for the two versions.
+
+> **Need `perf`?** It's Linux only. Install it with `sudo apt install linux-tools-common linux-tools-$(uname -r)` (Debian/Ubuntu) or `sudo dnf install perf` (Fedora). If `perf stat true` fails with a permissions error, run `sudo sysctl kernel.perf_event_paranoid=1`. On macOS, Windows, or a VM or container without hardware counters, skip this step.
 
 ```bash
 (cd labs && go test -c -o caches.test ./16-cpu-caches/)

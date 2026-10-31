@@ -67,37 +67,6 @@ benchstat -h
 
 Make sure `$(go env GOPATH)/bin` is in your `PATH`.
 
-### Graphviz (optional)
-
-`go tool pprof -http=:` works without it, but the graph view needs `dot`:
-
-```bash
-# Debian/Ubuntu
-sudo apt install graphviz
-# macOS
-brew install graphviz
-```
-
-### perf (optional, Linux only)
-
-In Part IV we use hardware performance counters (cache misses, branch misses) to *prove* what is happening inside the CPU. The tool for that is `perf`:
-
-```bash
-# Debian/Ubuntu
-sudo apt install linux-tools-common linux-tools-$(uname -r)
-# Fedora
-sudo dnf install perf
-```
-
-Many distributions don't let regular users read hardware counters by default. If `perf stat true` fails with a permissions error, lower the restriction for the duration of the workshop:
-
-```bash
-cat /proc/sys/kernel/perf_event_paranoid    # 3 or 4 means "blocked"
-sudo sysctl kernel.perf_event_paranoid=1
-```
-
-> ⚠️ **Not on Linux?** `perf` only exists on Linux. On macOS or Windows (and inside many VMs and containers, where hardware counters aren't exposed), skip the `perf` steps. Every module also works with benchmarks alone. You'll see the effect in `sec/op`, you just won't see the counter that explains it. On macOS, Instruments' "CPU Counters" template can show similar data if you want to dig deeper.
-
 ## Step 4: Verify Your Environment
 
 From the repository root, check that every lab compiles and passes its tests, both in your version and in the reference solutions:

@@ -49,7 +49,7 @@ make bench LAB=18
 
 Look for a jump such as `JGT` after the comparison with the threshold. That is the data-dependent branch, separate from the jump that repeats the loop. Instruction names depend on the CPU architecture.
 
-Optional on Linux, use `perf stat -e branches,branch-misses` with a compiled benchmark to compare random and sorted input. Skip counters if they are unavailable.
+Optional on Linux, use `perf stat -e branches,branch-misses` with a compiled benchmark to compare random and sorted input. Skip counters if they are unavailable. If you don't have `perf` yet, see the install note in [module 16](16-cpu-caches.md).
 
 ### Step 3: Fix it
 

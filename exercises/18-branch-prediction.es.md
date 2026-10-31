@@ -49,7 +49,7 @@ make bench LAB=18
 
 Busca un salto como `JGT` después de la comparación con el umbral. Ese es el salto dependiente de los datos, distinto del que repite el bucle. Los nombres de las instrucciones dependen de la arquitectura.
 
-Opcional en Linux: usa `perf stat -e branches,branch-misses` con un benchmark compilado para comparar la entrada aleatoria y la ordenada. Si los contadores no están disponibles, sáltalos.
+Opcional en Linux: usa `perf stat -e branches,branch-misses` con un benchmark compilado para comparar la entrada aleatoria y la ordenada. Si los contadores no están disponibles, sáltalos. Si aún no tienes `perf`, mira la nota de instalación del [módulo 16](16-cpu-caches.md).
 
 ### Paso 3: Arréglalo
 

@@ -32,7 +32,6 @@ Uses stock **Go 1.27**. No need to build Go from source.
 
 - Go 1.27 or newer
 - `benchstat`: `go install golang.org/x/perf/cmd/benchstat@latest`
-- Optional: Graphviz (pprof graphs), Linux `perf` (hardware counters in Part III)
 
 ## Running the Labs
 
