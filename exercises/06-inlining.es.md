@@ -31,22 +31,7 @@ func add(a, b int) int { return a + b }
 func addNoInline(a, b int) int { return a + b }
 ```
 
-El benchmark preparado en `labs/06-inlining/call_test.go` llama directamente a cada función en un bucle. Cada resultado alimenta la siguiente suma y el resultado final se guarda para que el compilador no pueda descartar el trabajo.
-
-Desde la raíz del repositorio, ejecuta:
-
-```bash
-make bench LAB=06 BENCH=Add
-```
-
-En mi máquina:
-
-| Versión | Tiempo por suma |
-|---|---|
-| `before`: `addNoInline` | unos 0,83 ns |
-| `after`: `add`, con inlining | unos 0,20 ns |
-
-La diferencia es de unos **0,6 ns por llamada** en este bucle pequeño. Ambos tiempos incluyen el propio bucle; la diferencia estima el coste de mantener la llamada y las optimizaciones que impide. Es poco, pero se acumula si una función hace muy poco trabajo y se llama a menudo.
+Si medimos las dos en un bucle muy ajustado, la llamada cuesta unos **0,6 ns** más que la versión con inlining en mi máquina (unos 0,83 ns frente a 0,20 ns por suma). Eso incluye la propia llamada y las optimizaciones que impide. Es poco, pero se acumula si una función hace muy poco trabajo y se llama a menudo. En el laboratorio veremos cómo se acumula en código realista.
 
 ### El presupuesto
 
@@ -96,7 +81,7 @@ La función ya comprueba primero si el cupón está vacío. Pero las otras ramas
 Ejecuta estos comandos desde la raíz del repositorio:
 
 ```bash
-make bench LAB=06 BENCH=Total
+make bench LAB=06
 ```
 
 ### Paso 2: Pregúntale al compilador
@@ -131,12 +116,12 @@ Ahora el compilador puede copiar el caso común directamente en el bucle del tot
 ```bash
 (cd labs && go test ./06-inlining/)
 (cd labs && go build -gcflags=-m=2 ./06-inlining/ 2>&1 | grep -E 'can inline priceAfter|inlining call to priceAfter')
-make bench LAB=06 BENCH=Total
+make bench LAB=06
 ```
 
 Los tests cubren precios normales, cupones, espacios, redondeo y precios negativos. El compilador debería mostrar `can inline priceAfter with cost 70` e `inlining call to priceAfter`.
 
-Con la solución de referencia (`make solution LAB=06 BENCH=Total`), en mi máquina:
+Con la solución de referencia (`make solution LAB=06`), en mi máquina:
 
 | Medida | Antes | Después |
 |---|---|---|

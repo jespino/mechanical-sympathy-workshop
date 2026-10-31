@@ -31,22 +31,7 @@ func add(a, b int) int { return a + b }
 func addNoInline(a, b int) int { return a + b }
 ```
 
-The prepared benchmark in `labs/06-inlining/call_test.go` calls each function directly in a loop. Each result feeds the next addition, and the final result is saved so the compiler cannot discard the work.
-
-From the repository root, run:
-
-```bash
-make bench LAB=06 BENCH=Add
-```
-
-On my machine:
-
-| Version | Time per addition |
-|---|---|
-| `before`: `addNoInline` | about 0.83 ns |
-| `after`: `add`, inlined | about 0.20 ns |
-
-The difference is about **0.6 ns per call** in this tiny loop. Both timings include the loop itself; the difference estimates the cost of keeping the call and the optimizations it prevents. It is small, but adds up when a function does very little work and is called often.
+Benchmarking the two in a tight loop, the call costs about **0.6 ns** more than the inlined version on my machine (about 0.83 ns vs 0.20 ns per addition). That includes the call itself and the optimizations it prevents. It is small, but adds up when a function does very little work and is called often. In the lab we'll see it add up on realistic code.
 
 ### The budget
 
@@ -96,7 +81,7 @@ The function already checks for an empty coupon first. But its other branches ma
 Run these commands from the repository root:
 
 ```bash
-make bench LAB=06 BENCH=Total
+make bench LAB=06
 ```
 
 ### Step 2: Ask the compiler
@@ -131,12 +116,12 @@ Now the compiler can copy the common case directly into the total's loop. Only i
 ```bash
 (cd labs && go test ./06-inlining/)
 (cd labs && go build -gcflags=-m=2 ./06-inlining/ 2>&1 | grep -E 'can inline priceAfter|inlining call to priceAfter')
-make bench LAB=06 BENCH=Total
+make bench LAB=06
 ```
 
 The tests cover ordinary prices, coupon codes, whitespace, rounding and negative prices. The compiler should report `can inline priceAfter with cost 70` and `inlining call to priceAfter`.
 
-With the reference solution (`make solution LAB=06 BENCH=Total`), on my machine:
+With the reference solution (`make solution LAB=06`), on my machine:
 
 | Measurement | Before | After |
 |---|---|---|
