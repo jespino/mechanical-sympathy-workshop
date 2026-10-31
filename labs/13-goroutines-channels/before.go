@@ -10,21 +10,12 @@ import (
 	"sync"
 )
 
-// work is the per-item computation: a few rounds of an integer mixer.
-// It takes some tens of nanoseconds, which is about the size of many real
-// per-item tasks (parse a field, hash a key, update a struct).
-func work(x uint64) uint64 {
-	for range 16 {
-		x ^= x >> 33
-		x *= 0xff51afd7ed558ccd
-		x ^= x >> 29
-	}
-	return x
-}
+// salePrice applies a 10% discount in cents, rounding the discount down.
+func salePrice(cents uint64) uint64 { return cents - cents/10 }
 
-// SumBefore returns the sum of work(x) for every item, using GOMAXPROCS
+// TotalPricesBefore returns the sum of salePrice(x) for every item, using GOMAXPROCS
 // worker goroutines fed through an unbuffered channel, one item per send.
-func SumBefore(items []uint64) uint64 {
+func TotalPricesBefore(items []uint64) uint64 {
 	workers := runtime.GOMAXPROCS(0)
 	jobs := make(chan uint64)
 	partials := make(chan uint64, workers)
@@ -33,7 +24,7 @@ func SumBefore(items []uint64) uint64 {
 		go func() {
 			var sum uint64
 			for x := range jobs {
-				sum += work(x)
+				sum += salePrice(x)
 			}
 			partials <- sum
 		}()
@@ -51,14 +42,14 @@ func SumBefore(items []uint64) uint64 {
 	return total
 }
 
-// MapBefore returns work(x) for every item. It starts one goroutine per item:
+// DiscountPricesBefore returns salePrice(x) for every item. It starts one goroutine per item:
 // goroutines are cheap, aren't they?
-func MapBefore(items []uint64) []uint64 {
+func DiscountPricesBefore(items []uint64) []uint64 {
 	out := make([]uint64, len(items))
 	var wg sync.WaitGroup
 	for i, x := range items {
 		wg.Go(func() {
-			out[i] = work(x)
+			out[i] = salePrice(x)
 		})
 	}
 	wg.Wait()

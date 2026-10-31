@@ -20,9 +20,8 @@ El workshop va en **crescendo**. Empezamos con las herramientas para medir, segu
 |---|---|---|
 | I · Primero, medir | 0–2 | Benchmarks que no mienten, `benchstat` y `pprof` |
 | II · Asignaciones y el compilador | 3–9 | Pre-asignación, strings, escape analysis, inlining, interfaces, bounds checks |
-| III · El GC y el runtime | 10–14 | Layout de structs y clases de tamaño, `sync.Pool`, presión sobre el GC, el scheduler, syscalls |
-| IV · La memoria y el hardware | 15–17 | Cachés de CPU, contención y false sharing, predicción de saltos |
-| V · Juntándolo todo | 18–19 | PGO y un proyecto final de optimización |
+| III · El GC y el runtime | 10–15 | Layout de structs y clases de tamaño, `sync.Pool`, presión sobre el GC, el scheduler, syscalls, PGO |
+| IV · La memoria y el hardware | 16–18 | Cachés de CPU, contención y false sharing, predicción de saltos |
 
 Todos los laboratorios siguen el mismo ciclo, que es también el que deberías usar en la vida real:
 

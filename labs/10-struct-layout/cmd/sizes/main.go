@@ -54,8 +54,8 @@ type Leading struct {
 }
 
 func main() {
-	layout(structlayout.ParticleBefore{})
-	layout(structlayout.ParticleAfter{})
+	layout(structlayout.OrderBefore{})
+	layout(structlayout.OrderAfter{})
 	layout(Trailing{})
 	layout(Leading{})
 }

@@ -20,9 +20,8 @@ The workshop is a **crescendo**. We start with the tools to measure, then the si
 |---|---|---|
 | I · Measure first | 0–2 | Benchmarks that don't lie, `benchstat`, and `pprof` |
 | II · Allocations and the compiler | 3–9 | Pre-allocation, strings, escape analysis, inlining, interfaces, bounds checks |
-| III · The GC and the runtime | 10–14 | Struct layout and size classes, `sync.Pool`, GC pressure, the scheduler, syscalls |
-| IV · Memory and the hardware | 15–17 | CPU caches, contention and false sharing, branch prediction |
-| V · Putting it all together | 18–19 | PGO and a capstone optimization project |
+| III · The GC and the runtime | 10–15 | Struct layout and size classes, `sync.Pool`, GC pressure, the scheduler, syscalls, PGO |
+| IV · Memory and the hardware | 16–18 | CPU caches, contention and false sharing, branch prediction |
 
 Every lab follows the same loop, which is also the loop you should use in real life:
 

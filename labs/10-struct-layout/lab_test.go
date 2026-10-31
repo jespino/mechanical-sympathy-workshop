@@ -6,60 +6,72 @@ import (
 )
 
 const (
-	spawnN = 10_000    // individually allocated particles
-	sumN   = 1_000_000 // 56 MB before, 32 MB after: bigger than the caches
+	ordersN = 10_000    // individually allocated orders
+	sumN    = 1_000_000 // 56 MB before, 32 MB after: bigger than the caches
 )
 
 func TestSameResults(t *testing.T) {
-	t.Logf("sizeof: before=%d after=%d", unsafe.Sizeof(ParticleBefore{}), unsafe.Sizeof(ParticleAfter{}))
-	b, a := SpawnBefore(100), SpawnAfter(100)
+	t.Logf("sizeof: before=%d after=%d", unsafe.Sizeof(OrderBefore{}), unsafe.Sizeof(OrderAfter{}))
+	b, a := CreateOrdersBefore(100), CreateOrdersAfter(100)
 	for i := range b {
 		pb, pa := b[i], a[i]
-		if pb.Active != pa.Active || pb.Alive != pa.Alive || pb.Kind != pa.Kind ||
-			pb.X != pa.X || pb.Y != pa.Y || pb.Z != pa.Z || pb.ID != pa.ID {
-			t.Fatalf("particle %d differs: %+v vs %+v", i, *pb, *pa)
+		if pb.Paid != pa.Paid || pb.Delivered != pa.Delivered || pb.Items != pa.Items ||
+			pb.SubtotalCents != pa.SubtotalCents || pb.ShippingCents != pa.ShippingCents || pb.DiscountCents != pa.DiscountCents || pb.ID != pa.ID {
+			t.Fatalf("order %d differs: %+v vs %+v", i, *pb, *pa)
 		}
 	}
-	bs, as := make([]ParticleBefore, 1000), make([]ParticleAfter, 1000)
-	FillBefore(bs)
-	FillAfter(as)
-	if SumActiveBefore(bs) != SumActiveAfter(as) {
-		t.Error("SumActive: after differs from before")
+	bs, as := make([]OrderBefore, 1000), make([]OrderAfter, 1000)
+	FillOrdersBefore(bs)
+	FillOrdersAfter(as)
+	if TotalPaidBefore(bs) != TotalPaidAfter(as) {
+		t.Error("TotalPaid: after differs from before")
 	}
 }
 
 // The sinks keep the results alive so the compiler can't stack-allocate them.
 var (
-	sinkBefore []*ParticleBefore
-	sinkAfter  []*ParticleAfter
+	totalPaidSink int64
+	sinkBefore    []*OrderBefore
+	sinkAfter     []*OrderAfter
 )
 
-func BenchmarkSpawn(b *testing.B) {
+func BenchmarkCreateOrders(b *testing.B) {
 	b.Run("impl=before", func(b *testing.B) {
 		for b.Loop() {
-			sinkBefore = SpawnBefore(spawnN)
+			sinkBefore = CreateOrdersBefore(ordersN)
 		}
 	})
 	b.Run("impl=after", func(b *testing.B) {
 		for b.Loop() {
-			sinkAfter = SpawnAfter(spawnN)
+			sinkAfter = CreateOrdersAfter(ordersN)
 		}
 	})
 }
 
-func BenchmarkSumActive(b *testing.B) {
+func BenchmarkTotalPaid(b *testing.B) {
 	b.Run("impl=before", func(b *testing.B) {
-		ps := make([]ParticleBefore, sumN)
-		FillBefore(ps)
+		ps := make([]OrderBefore, sumN)
+		FillOrdersBefore(ps)
 		for b.Loop() {
-			SumActiveBefore(ps)
+			totalPaidSink = TotalPaidBefore(ps)
 		}
 	})
 	b.Run("impl=after", func(b *testing.B) {
-		ps := make([]ParticleAfter, sumN)
-		FillAfter(ps)
+		ps := make([]OrderAfter, sumN)
+		FillOrdersAfter(ps)
 		for b.Loop() {
-			SumActiveAfter(ps)
+			totalPaidSink = TotalPaidAfter(ps)
 		}
 	})
+}
+
+func TestReceiptTotal(t *testing.T) {
+	orders := []OrderAfter{
+		{Paid: true, SubtotalCents: 1000, ShippingCents: 200, DiscountCents: 100},
+		{Paid: false, SubtotalCents: 9000},
+		{Paid: true, SubtotalCents: 500, ShippingCents: 0, DiscountCents: 50},
+	}
+	if got := TotalPaidAfter(orders); got != 1550 {
+		t.Fatalf("got %d cents, want 1550", got)
+	}
 }

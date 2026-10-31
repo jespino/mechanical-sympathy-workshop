@@ -11,10 +11,10 @@ import (
 // overhead disappear, then run the benchmarks to compare against before.go.
 // The reference solution is in solution.go (run with -tags solution).
 
-// SumAfter returns the sum of work(x) for every item.
+// TotalPricesAfter returns the sum of salePrice(x) for every item.
 // TODO: send chunks of items (a []uint64 sub-slice, ~1000 items) instead of
 // one item per channel operation. Sub-slicing doesn't copy anything.
-func SumAfter(items []uint64) uint64 {
+func TotalPricesAfter(items []uint64) uint64 {
 	workers := runtime.GOMAXPROCS(0)
 	jobs := make(chan uint64)
 	partials := make(chan uint64, workers)
@@ -23,7 +23,7 @@ func SumAfter(items []uint64) uint64 {
 		go func() {
 			var sum uint64
 			for x := range jobs {
-				sum += work(x)
+				sum += salePrice(x)
 			}
 			partials <- sum
 		}()
@@ -41,15 +41,15 @@ func SumAfter(items []uint64) uint64 {
 	return total
 }
 
-// MapAfter returns work(x) for every item.
+// DiscountPricesAfter returns salePrice(x) for every item.
 // TODO: start GOMAXPROCS goroutines, not len(items), and give each one a
 // contiguous range of indices to process.
-func MapAfter(items []uint64) []uint64 {
+func DiscountPricesAfter(items []uint64) []uint64 {
 	out := make([]uint64, len(items))
 	var wg sync.WaitGroup
 	for i, x := range items {
 		wg.Go(func() {
-			out[i] = work(x)
+			out[i] = salePrice(x)
 		})
 	}
 	wg.Wait()

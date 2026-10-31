@@ -40,8 +40,8 @@
     {
       "id": "03-swiss",
       "anchor": "03-preallocation:### Maps grow too",
-      "alt_en": "A Swiss Table map: a directory of tables, each table made of groups of 8 slots with a control word",
-      "alt_es": "Un map Swiss Table: un directorio de tablas, cada una formada por grupos de 8 slots con una palabra de control",
+      "alt_en": "A Swiss Table map: a directory of tables, each table made of groups of 8 slots. Growing means rehashing and re-inserting every entry",
+      "alt_es": "Un map Swiss Table: un directorio de tablas, cada una formada por grupos de 8 slots. Crecer significa recalcular el hash y reinsertar cada entrada",
       "prompt": "A hand-drawn data structure diagram. On the left, a tall narrow box labeled 'directory' with four rows, each row an arrow pointing right to a box labeled 'table'. Zoom into one table on the right: it contains several rows labeled 'group', and each group is drawn as a strip of 8 tiny control-byte cells labeled 'control word (8 tags)' above 8 larger cells labeled 'slot (key, value)'. A small note near the table: 'max load 7/8, then grow: double the table, or split it past 1024 slots'. One table is outlined with the teal accent and labeled 'growing = rehash and reinsert every entry'."
     },
     {
@@ -56,119 +56,126 @@
       "anchor": "05-escape-analysis:## The Concept: Stack or Heap?",
       "alt_en": "Values that don't outlive their function stay on the stack; values referenced after the function returns escape to the heap",
       "alt_es": "Los valores que no sobreviven a su función se quedan en el stack; los que se usan después de que la función retorne escapan al heap",
-      "prompt": "Left side: a vertical stack of hand-drawn rectangles labeled 'goroutine stack', with frames labeled from top to bottom 'main', 'handle', 'parse (returns)'. Inside the 'parse' frame, a small box 'buf [64]byte' with a note 'dies with the frame: free'. Right side: a cloud-like hand-drawn region labeled 'heap (managed by the GC)', containing a small box 'Sample{...}'. A hand-drawn arrow goes from a pointer cell 'p *Sample' in the 'handle' frame into the heap box, labeled 'still referenced after parse returns, so it escapes'. A teal-accented note at the bottom: 'go build -gcflags=-m tells you which is which'."
-    },
-    {
-      "id": "06-inline",
-      "anchor": "06-inlining:## The Concept: What Inlining Buys",
-      "alt_en": "Inlining replaces a call with the callee's body; it only happens when the function's cost fits in the budget of 80",
-      "alt_es": "El inlining sustituye una llamada por el cuerpo de la función; solo ocurre si su coste cabe en el presupuesto de 80",
-      "prompt": "Left panel 'before inlining': a box 'caller loop' with a hand-drawn arrow jumping out to a separate box 'uvarint()' and an arrow back, with small notes on the arrows 'call: save registers, jump' and 'return'. Right panel 'after inlining': a single box 'caller loop' containing the body of uvarint written inline, with a note 'no call, and the compiler can optimize across it'. Below both panels, a horizontal hand-drawn gauge from 0 to 100 labeled 'inlining cost', with a vertical mark at 80 labeled 'budget 80'. A marker at 82 labeled 'before: cost 82, not inlined' sits just past the mark, and a teal marker at 79 labeled 'after split: cost 79, inlined' sits just before it."
-    },
-    {
-      "id": "07-outlined",
-      "anchor": "07-inlining-escape:### The outlined constructor pattern",
-      "alt_en": "When a small constructor is inlined, its allocation moves into the caller's frame and can stay on the stack",
-      "alt_es": "Cuando un constructor pequeño se hace inline, su asignación se mueve al frame del llamador y puede quedarse en el stack",
-      "prompt": "Two side-by-side panels. Left panel 'big constructor (not inlined)': a stack frame box 'caller' and a separate stack frame box 'NewDecoder', with '&Decoder{}' inside NewDecoder and an arrow from it to a cloud labeled 'heap', with a note '1 alloc per call'. Right panel 'outlined constructor': a stack frame box 'caller' that contains the inlined small 'NewDecoder' with 'd := &Decoder{}' drawn inside the caller's frame and labeled 'lives on the caller's stack', plus an arrow from the caller frame to a separate box 'd.init(block): the heavy work, not inlined'. The right panel's 'd := &Decoder{}' is highlighted with the teal accent, with a note '0 allocs'."
+      "prompt": "Two side-by-side panels separated by a hand-drawn vertical dashed line. LEFT panel, title 'used only inside the function': a hand-drawn box labeled 'func f()' containing a small box labeled 'x'. Below it, a stack of three hand-drawn rectangles labeled 'stack', with 'x' sitting in the top rectangle. A short note next to it: 'freed when f returns'. RIGHT panel, title 'used after the function returns': a hand-drawn box labeled 'func f() *T' containing a small box labeled 'p := &T{}'. An arrow labeled 'return p' goes from the function box to a box labeled 'caller'. Below, a cloud-shaped region labeled 'heap', drawn in the teal accent, contains a small box labeled 'T{}'. A hand-drawn arrow goes from 'caller' to the 'T{}' box in the heap. A teal note next to the heap: 'escapes: still needed after f returns'. Only these labels, nothing else written in the image."
     },
     {
       "id": "08-iface",
-      "anchor": "08-interfaces-boxing:## The Concept: Two Words and a Table",
-      "alt_en": "An interface value is two words: an itab pointer and a data pointer. Storing a non-pointer value boxes it on the heap",
-      "alt_es": "Un valor de interfaz son dos palabras: un puntero al itab y un puntero a los datos. Guardar un valor que no es puntero lo encajona en el heap",
-      "prompt": "On the left, a hand-drawn box labeled 'var s fmt.Stringer = Celsius(42)' above a box labeled 'interface value (2 words)' split into two cells: 'tab' and 'data'. From 'tab', an arrow to a box labeled 'itab' containing exactly two rows: 'type: Celsius' and 'fun[0]: String'. From the 'fun[0]: String' row, an arrow to a box 'Celsius.String()', with a note below it: 'dynamic call: load from the table, then jump; not inlined unless devirtualized'. From 'data', an arrow to a small box inside a cloud labeled 'heap', the box containing 'Celsius(42), 8 bytes'. Next to the heap, a teal note: 'boxing (convT64): one allocation, except for small values 0-255 and constants'."
+      "anchor": "08-interfaces-boxing:### What an interface holds",
+      "alt_en": "An any value remembers the type int and points to a stored copy of the price 1000; boxing may need extra heap memory",
+      "alt_es": "Un valor any recuerda el tipo int y apunta a una copia del precio 1000; el boxing puede necesitar memoria extra en el heap",
+      "prompt": "Use case: infographic-diagram / precise-object-edit. Edit target: the supplied workshop diagram. Replace its entire technical content with a much simpler beginner-friendly illustration, preserving the existing hand-drawn black ink, white background, subtle teal accent, wide landscape format and clear legible hand lettering. NO itab, no methods, no Celsius, no addresses, no convT64, no word sizes, no cache, no allocation-count claims. Top line of code exactly 'price := 1000' and below it 'var value any = price'. Below, left large rounded rectangular box labeled 'value (any)', split into two horizontal rows: upper row 'type: int', lower row 'where to find the value'. Draw exactly one clear arrow from the LOWER ROW to a separate simple box on the right titled 'stored copy', with a large '1000' inside. Do not draw an arrow from the type row. Below the diagram, one caption exactly 'Boxing: storing a copy of the value'. At bottom, a short teal note exactly 'This may need extra heap memory'. Keep only these labels, lots of whitespace, very large readable text. The right box is generic value storage, NOT explicitly a heap or stack. No numbered steps, no decorative content. Return a clean finished diagram."
     },
     {
-      "id": "09-prove",
-      "anchor": "09-bounds-check-elimination:### The prove pass",
-      "alt_en": "The prove pass collects facts about indexes and lengths and removes the checks it can prove are always in bounds",
-      "alt_es": "El pase prove recoge hechos sobre índices y longitudes y elimina las comprobaciones que puede demostrar que siempre están en rango",
-      "prompt": "A left-to-right flow of three hand-drawn boxes. First box 'your loop' containing code lines 'for len(b) >= 16 {', '  id := b[0] ... b[15]', '  b = b[16:]', '}'. Arrow to a second box 'prove pass (SSA)' containing a small list of facts written by hand: 'len(b) >= 16', '0 <= i <= 15', 'so i < len(b)'. Arrow to a third box 'machine code' showing two versions stacked: a crossed-out version 'CMP i, len / JLS panicBounds' labeled 'check removed', and a clean version 'MOVL (AX), SI' with the teal accent labeled 'just the load'. A note under the first box: 'give it the facts: re-slice, check length once, use range'."
+      "id": "08-iface.es",
+      "anchor": "08-interfaces-boxing:### What an interface holds",
+      "alt_en": "An any value remembers the type int and points to a stored copy of the price 1000; boxing may need extra heap memory",
+      "alt_es": "Un valor any recuerda el tipo int y apunta a una copia del precio 1000; el boxing puede necesitar memoria extra en el heap",
+      "prompt": "Use case: infographic-diagram / precise-object-edit / text-localization. Edit target: the supplied workshop diagram. Replace its entire technical content with a much simpler beginner-friendly Spanish illustration, preserving hand-drawn black ink, white background, subtle teal accent, wide landscape format and clear legible hand lettering. NO itab, no methods, no Celsius, no addresses, no convT64, no word sizes, no allocation-count claims. Top line of code exactly 'price := 1000' and below it 'var value any = price'. Below, left large rounded rectangular box labeled 'value (any)', split into two horizontal rows: upper row 'tipo: int', lower row 'dónde encontrar el valor'. Draw exactly one clear arrow from the LOWER ROW to a separate simple box on the right titled 'copia guardada', with a large '1000' inside. Do not draw an arrow from the type row. Below the diagram one caption exactly 'Boxing: guardar una copia del valor'. At bottom a short teal note exactly 'Esto puede necesitar memoria extra en el heap'. Keep only these labels, lots of whitespace, very large readable text, accurate Spanish accents. The right box is generic value storage, NOT explicitly a heap or stack. No numbered steps, no decorative content. Return a clean finished diagram."
     },
     {
       "id": "10-padding",
-      "anchor": "10-struct-layout:### Seeing it",
-      "alt_en": "Field order decides padding: ParticleBefore takes 56 bytes, the same fields sorted by alignment take 32",
-      "alt_es": "El orden de los campos decide el padding: ParticleBefore ocupa 56 bytes, los mismos campos ordenados por alineamiento ocupan 32",
-      "prompt": "Two horizontal hand-drawn memory strips made of cells, with tick marks and numbers at byte offsets 0, 8, 16, 24, 32, 40, 48, 56. Top strip titled 'ParticleBefore: 56 bytes (size class 64)', with these segments in order from left to right: 'Active 1B', then a hatched segment 'pad 7B', then 'X 8B', then 'Kind 2B', then hatched 'pad 6B', then 'Y 8B', then 'Alive 1B', then hatched 'pad 7B', then 'Z 8B', then 'ID 4B', then hatched 'pad 4B'. Bottom strip titled 'ParticleAfter: 32 bytes (size class 32)', with segments packed and no padding: 'X 8B', 'Y 8B', 'Z 8B', 'ID 4B', 'Kind 2B', 'Active 1B', 'Alive 1B', outlined with the teal accent. Under the bottom strip, a note: 'same fields, sorted from largest to smallest alignment'. Use the abbreviation 'B' for bytes exactly as written; do not write the word 'bytes' inside the segments."
+      "anchor": "10-struct-layout:### Size classes",
+      "alt_en": "Reordering the same order fields removes 24 bytes of padding: the struct shrinks from 56 to 32 bytes and its individual heap slot shrinks from 64 to 32 bytes",
+      "alt_es": "Reordenar los mismos campos elimina 24 bytes de relleno: el struct pasa de 56 a 32 bytes y su bloque individual del heap pasa de 64 a 32 bytes",
+      "prompt": "Use case: infographic-diagram / precise-object-edit. Replace the supplied old Particle diagram with an updated beginner-friendly shopping-order diagram. Preserve its landscape white-background hand-drawn black-ink style with a subtle teal accent. It must show the ACTUAL ORDER fields, not particles. Use two horizontal memory strips one above the other, the lower one visibly shorter, showing the exact same data reordered. Gray diagonal hatching means internal struct padding; data blocks are white. Byte sizes must be accurate. BEFORE sequence: Paid 1 B, padding 7 B, Subtotal 8 B, Items 2 B, padding 6 B, Shipping 8 B, Delivered 1 B, padding 7 B, Discount 8 B, ID 4 B, padding 4 B. This totals 56 bytes: 32 bytes of data + 24 bytes of padding. AFTER sequence: Subtotal 8 B, Shipping 8 B, Discount 8 B, ID 4 B, Items 2 B, Paid 1 B, Delivered 1 B. This totals 32 bytes, with no padding. Name and size each field legibly; use labels outside the strip with short leader lines for narrow fields if needed. Keep each field exactly once in each strip and padding only in BEFORE. Do not add byte-index rulers or compiler details. Beneath each strip show a simple arrow from its struct size to the allocator's size class, keeping allocator rounding distinct from the hatched struct padding. Use the full width and generous whitespace. Aim for a clean textbook diagram that a junior programmer can read in a few seconds. No particles, no X/Y/Z, no methods or pointers, no extra diagrams. English labels. Headings exactly 'Before: OrderBefore' and 'After: OrderAfter'. Padding blocks labeled 'padding' and their byte size. Under top strip exactly 'Struct: 56 B = 32 B data + 24 B padding' then '56 B -> 64 B heap slot'. Under bottom strip exactly 'Struct: 32 B, no padding' then '32 B -> 32 B heap slot'. Footer exactly 'Same fields. Less padding. Smaller allocation.' Outline the AFTER strip and its final 32 B heap-slot label in subtle teal."
+    },
+    {
+      "id": "10-padding.es",
+      "anchor": "10-struct-layout:### Size classes",
+      "alt_en": "Reordering the same order fields removes 24 bytes of padding: the struct shrinks from 56 to 32 bytes and its individual heap slot shrinks from 64 to 32 bytes",
+      "alt_es": "Reordenar los mismos campos elimina 24 bytes de relleno: el struct pasa de 56 a 32 bytes y su bloque individual del heap pasa de 64 a 32 bytes",
+      "prompt": "Use case: infographic-diagram / precise-object-edit. Replace the supplied old Particle diagram with an updated beginner-friendly shopping-order diagram. Preserve its landscape white-background hand-drawn black-ink style with a subtle teal accent. It must show the ACTUAL ORDER fields, not particles. Use two horizontal memory strips one above the other, the lower one visibly shorter, showing the exact same data reordered. Gray diagonal hatching means internal struct padding; data blocks are white. Byte sizes must be accurate. BEFORE sequence: Paid 1 B, padding 7 B, Subtotal 8 B, Items 2 B, padding 6 B, Shipping 8 B, Delivered 1 B, padding 7 B, Discount 8 B, ID 4 B, padding 4 B. This totals 56 bytes: 32 bytes of data + 24 bytes of padding. AFTER sequence: Subtotal 8 B, Shipping 8 B, Discount 8 B, ID 4 B, Items 2 B, Paid 1 B, Delivered 1 B. This totals 32 bytes, with no padding. Name and size each field legibly; use labels outside the strip with short leader lines for narrow fields if needed. Keep each field exactly once in each strip and padding only in BEFORE. Do not add byte-index rulers or compiler details. Beneath each strip show a simple arrow from its struct size to the allocator's size class, keeping allocator rounding distinct from the hatched struct padding. Use the full width and generous whitespace. Aim for a clean textbook diagram that a junior programmer can read in a few seconds. No particles, no X/Y/Z, no methods or pointers, no extra diagrams. Spanish labels, preserving Go field names as Paid, Subtotal, Items, Shipping, Delivered, Discount, ID. Headings exactly 'Antes: OrderBefore' and 'Después: OrderAfter'. Padding blocks labeled 'relleno' and their byte size. Under top strip exactly 'Struct: 56 B = 32 B de datos + 24 B de relleno' then '56 B -> bloque de 64 B en el heap'. Under bottom strip exactly 'Struct: 32 B, sin relleno' then '32 B -> bloque de 32 B en el heap'. Footer exactly 'Mismos campos. Menos relleno. Menos memoria.' Outline the AFTER strip and its final 32 B heap-slot label in subtle teal. Spell Spanish accents correctly."
+    },
+    {
+      "id": "10-spans",
+      "anchor": "10-struct-layout:### Slots inside a span",
+      "alt_en": "Two 8 KiB spans hold 256 slots of 32 bytes or 128 slots of 64 bytes; a 56-byte order uses one 64-byte slot with 8 bytes left unused",
+      "alt_es": "Dos spans de 8 KiB contienen 256 huecos de 32 bytes o 128 huecos de 64 bytes; un pedido de 56 bytes usa un hueco de 64 y deja 8 bytes sin usar",
+      "prompt": "Use case: infographic-diagram. Create a beginner-friendly educational diagram for a Go workshop. Hand-drawn slightly wobbly black ink, white background, clear hand-lettered labels, one subtle teal accent, landscape. No characters, no jokes. Two horizontal span diagrams, one ABOVE the other. Each span belongs to EXACTLY ONE size class. Both spans have 8192 bytes (8 KiB) in total, but show only their first 256 bytes, followed by a visibly dashed continuation area with '...'. The top visible excerpt has EXACTLY EIGHT equal white boxes side by side, each labeled '32 B'. The bottom visible excerpt has EXACTLY FOUR equal boxes across the SAME total width as the eight upper boxes, each labeled '64 B'. Do NOT draw more than 8 upper slots or 4 lower slots before the continuation. Thus each lower box is twice the width of each upper box. Make it clear the drawing is an excerpt; the ellipsis represents the rest of each span, not a free memory block. Under the bottom span, draw a separate large close-up of ONE 64-byte slot: white area taking 7/8 of width, labeled '56 B', and a gray-hatched final 1/8 labeled '8 B'. This is allocator rounding, not internal struct padding. Do not label the entire span as a single object. All math: 8192/32=256, 8192/64=128. Keep clean whitespace and large readable text. English text. Title exactly 'One size class per span'. Top heading '32 B slots: 256 slots in an 8 KiB span'. Bottom heading '64 B slots: 128 slots in an 8 KiB span'. A small caption below the excerpts exactly 'Only the first 256 bytes are shown'. Close-up heading 'A 56 B order uses one 64 B slot'. Label the white close-up area '56 B order' and the hatched part '8 B unused'. Final footer exactly 'Same span size. Smaller slots fit more objects.' Teal accent around the top span border only."
+    },
+    {
+      "id": "10-spans.es",
+      "anchor": "10-struct-layout:### Slots inside a span",
+      "alt_en": "Two 8 KiB spans hold 256 slots of 32 bytes or 128 slots of 64 bytes; a 56-byte order uses one 64-byte slot with 8 bytes left unused",
+      "alt_es": "Dos spans de 8 KiB contienen 256 huecos de 32 bytes o 128 huecos de 64 bytes; un pedido de 56 bytes usa un hueco de 64 y deja 8 bytes sin usar",
+      "prompt": "Use case: infographic-diagram. Create a beginner-friendly educational diagram for a Go workshop. Hand-drawn slightly wobbly black ink, white background, clear hand-lettered labels, one subtle teal accent, landscape. No characters, no jokes. Two horizontal span diagrams, one ABOVE the other. Each span belongs to EXACTLY ONE size class. Both spans have 8192 bytes (8 KiB) in total, but show only their first 256 bytes, followed by a visibly dashed continuation area with '...'. The top visible excerpt has EXACTLY EIGHT equal white boxes side by side, each labeled '32 B'. The bottom visible excerpt has EXACTLY FOUR equal boxes across the SAME total width as the eight upper boxes, each labeled '64 B'. Do NOT draw more than 8 upper slots or 4 lower slots before the continuation. Thus each lower box is twice the width of each upper box. Make it clear the drawing is an excerpt; the ellipsis represents the rest of each span, not a free memory block. Under the bottom span, draw a separate large close-up of ONE 64-byte slot: white area taking 7/8 of width, labeled '56 B', and a gray-hatched final 1/8 labeled '8 B'. This is allocator rounding, not internal struct padding. Do not label the entire span as a single object. All math: 8192/32=256, 8192/64=128. Keep clean whitespace and large readable text. Spanish text, accurate accents. Title exactly 'Una clase de tamaño por span'. Top heading 'Huecos de 32 B: 256 en un span de 8 KiB'. Bottom heading 'Huecos de 64 B: 128 en un span de 8 KiB'. A small caption below the excerpts exactly 'Solo se muestran los primeros 256 bytes'. Close-up heading 'Un pedido de 56 B usa un hueco de 64 B'. Label the white close-up area 'Pedido: 56 B' and the hatched part '8 B sin usar'. Final footer exactly 'Mismo tamaño de span. Huecos menores, más objetos.' Teal accent around the top span border only."
     },
     {
       "id": "11-pool",
-      "anchor": "11-sync-pool:### One small cache per P",
+      "anchor": "11-sync-pool:### Get, use, return",
       "alt_en": "sync.Pool keeps a private slot and a shared queue per P, and other Ps can steal from the shared queues",
       "alt_es": "sync.Pool mantiene un slot privado y una cola compartida por cada P, y otros P pueden robar de las colas compartidas",
       "prompt": "Three hand-drawn columns side by side, labeled 'P0', 'P1', 'P2'. Each column contains a box 'poolLocal (padded to 128 bytes)' holding a small single cell labeled 'private' and below it a horizontal queue of cells labeled 'shared (lock-free deque)'. In P0, an arrow labeled 'Get/Put: private first, then head of own shared' points to its own cells, drawn with the teal accent. A dashed arrow from P2's column goes to the tail of P0's shared queue, labeled 'steal from another P's tail'. Below all three columns, a separate wide box labeled 'victim (previous GC cycle's pool)' with a note 'checked last, before calling New()'."
     },
     {
       "id": "11-victim",
-      "anchor": "11-sync-pool:### The victim cache: two GCs to die",
+      "anchor": "11-sync-pool:### Objects are not kept forever",
       "alt_en": "A pooled object survives one GC in the victim cache and is dropped at the second",
       "alt_es": "Un objeto en el pool sobrevive a un GC en la victim cache y se descarta en el segundo",
       "prompt": "A left-to-right timeline with two vertical dashed lines labeled 'GC #1' and 'GC #2'. Two horizontal lanes: the top lane labeled 'local (primary)', the bottom lane labeled 'victim'. Before GC #1, a small box 'buffer' sits in the top lane, labeled 'Put(buf)'. At GC #1, an arrow moves the box from the top lane down to the victim lane, labeled 'poolCleanup: local becomes victim'. Between GC #1 and GC #2, a note 'Get() can still find it here', drawn with the teal accent. At GC #2, the box is crossed out, labeled 'victim dropped: now garbage'."
     },
     {
       "id": "12-mark",
-      "anchor": "12-gc-pressure:### The cost model: pointers are what costs",
+      "anchor": "12-gc-pressure:### What gets scanned",
       "alt_en": "The GC follows every pointer in the heap; pointer-free memory is never scanned",
       "alt_es": "El GC sigue todos los punteros del heap; la memoria sin punteros nunca se escanea",
       "prompt": "Two side-by-side panels. Left panel titled '[]*Record: 2 million pointers': a box 'roots' with arrows into a slice drawn as a row of cells, each cell with an arrow to its own separate small 'Record' box scattered around, and some Records with further arrows to small 'string' boxes, labeled 'mark phase must visit every one'. Right panel titled '[]Record, pointer-free': the same roots arrow into one long contiguous strip of Record cells with no outgoing arrows, labeled 'noscan span: skipped by the mark phase', outlined with the teal accent. Under the panels, hand-lettered: 'GC cost grows with live pointers, not just live bytes'."
     },
     {
       "id": "12-pacer",
-      "anchor": "12-gc-pressure:### The pacer: when does a cycle start?",
+      "anchor": "12-gc-pressure:### Memory and CPU settings",
       "alt_en": "The heap goal is the live heap plus GOGC percent; a GC cycle starts as the heap approaches the goal",
       "alt_es": "El objetivo del heap es el heap vivo más un GOGC por ciento; un ciclo de GC empieza cuando el heap se acerca al objetivo",
       "prompt": "A hand-drawn line chart with 'time' on the horizontal axis and 'heap size' on the vertical axis. A horizontal dashed line near the bottom labeled 'live heap'. A higher horizontal dashed line labeled 'heap goal = live heap x (1 + GOGC/100)'. The heap line forms three repeating sawtooth cycles: it rises steadily from the live heap line; at a point clearly BELOW the goal line there is a dot labeled 'trigger: GC starts marking'; from that dot the line keeps rising more slowly through a shaded band labeled 'concurrent mark' until it reaches the goal line just as marking ends; then it drops straight down back to the live heap line, labeled 'sweep frees the garbage' on the first cycle only. A double-headed vertical arrow between the two dashed lines labeled 'GOGC=100: room to grow = 100% of live'. Near the top, a separate solid horizontal line in the teal accent labeled 'GOMEMLIMIT: a soft limit; the GC runs more often as the heap nears it'."
     },
     {
       "id": "13-channel",
-      "anchor": "13-goroutines-channels:### A channel operation",
+      "anchor": "13-goroutines-channels:### Sending through a channel",
       "alt_en": "Every channel send takes the channel lock and may wake a goroutine; batching pays that cost once per chunk instead of once per item",
       "alt_es": "Cada envío por un channel toma el lock del channel y puede despertar una goroutine; agrupar paga ese coste una vez por bloque en lugar de una vez por elemento",
       "prompt": "Two horizontal lanes. Top lane titled 'one item per send': a 'producer' box on the left sends many tiny boxes one by one through a hand-drawn pipe labeled 'chan' into several 'worker' boxes on the right. Every tiny box crossing the pipe has a small padlock icon and the note 'lock, copy, unlock, wake a goroutine', repeated many times. Bottom lane titled 'one chunk per send': the producer packs items into a few large boxes labeled '[]item (1024 items)' that cross the same pipe, with only a few padlock icons, and the note 'same overhead, paid once per 1024 items', drawn with the teal accent."
     },
     {
       "id": "14-syscalls",
-      "anchor": "14-io-syscalls:### Batching with bufio",
+      "anchor": "14-io-syscalls:### Batch small writes",
       "alt_en": "Without a buffer every small write crosses into the kernel; bufio collects them and crosses once per 4 KB",
       "alt_es": "Sin buffer, cada escritura pequeña cruza al kernel; bufio las acumula y cruza una vez cada 4 KB",
       "prompt": "A horizontal thick hand-drawn line across the middle of the image, labeled on its left end 'user space' above it and 'kernel' below it. Left half titled 'os.File.Write per record': many small boxes 'record' above the line, each with its own arrow crossing down through the line into a box 'write()' below, with a note '5,000 records = 5,000 syscalls'. Right half titled 'bufio.Writer': the same small record boxes first flow into a larger box above the line labeled 'buffer (4096 bytes)', and only a few arrows cross the line into 'write()', with the teal note '5,000 records = a few dozen syscalls'. A small warning note near the buffer: 'don't forget Flush()'."
     },
     {
-      "id": "15-hierarchy",
-      "anchor": "15-cpu-caches:## The Concept: The Memory Hierarchy",
+      "id": "15-pgo-loop",
+      "anchor": "15-pgo:### Let measurements guide the compiler",
+      "alt_en": "PGO: build, run under real load, collect a CPU profile, and rebuild with it so the compiler optimizes the hot paths",
+      "alt_es": "PGO: compila, ejecuta con carga real, captura un perfil de CPU y recompila con él para que el compilador optimice las rutas calientes",
+      "prompt": "A circular loop of four hand-drawn boxes connected by clockwise arrows: '1. go build', '2. run with real traffic', '3. collect CPU profile (pprof)', '4. save as default.pgo next to main', and an arrow back to '1. go build'. Inside the loop, a teal-accented box labeled 'compiler with a profile' listing three hand-lettered bullet points: 'hot calls: inline budget 80 -> 2000', 'hot interface calls: devirtualize', 'hot code: better block layout'."
+    },
+    {
+      "id": "16-hierarchy",
+      "anchor": "16-cpu-caches:### Small and fast, large and slow",
       "alt_en": "The memory hierarchy: each level is bigger and slower than the one above it",
       "alt_es": "La jerarquía de memoria: cada nivel es más grande y más lento que el anterior",
       "prompt": "A hand-drawn pyramid, vertical orientation, divided into five horizontal levels, narrowest at the top. From top to bottom: 'registers', 'L1 cache: tens of KB, ~1 ns', 'L2 cache: ~1 MB, ~3-4 ns', 'L3 cache: tens of MB, ~10-15 ns', and the widest bottom level 'main memory (DRAM): GBs, ~80-150 ns'. On the left side, a vertical hand-drawn arrow pointing down labeled 'bigger', and on the right side a vertical arrow pointing down labeled 'slower'. A teal accent highlights the gap between L3 and main memory, with a note 'a miss here costs ~100x an L1 hit'. Vertical (portrait-like) composition is fine for this one."
     },
     {
-      "id": "15-traversal",
-      "anchor": "15-cpu-caches:### Cache lines",
+      "id": "16-traversal",
+      "anchor": "16-cpu-caches:### Use nearby data",
       "alt_en": "Row-major traversal uses every byte of each cache line; column-major traversal touches a new cache line on every access",
       "alt_es": "Recorrer por filas usa cada byte de cada línea de caché; recorrer por columnas toca una línea nueva en cada acceso",
       "prompt": "Two hand-drawn grids side by side, each representing a matrix of int64 values with 4 rows and 16 columns of small empty cells. In each row, the cells are grouped into two groups of 8 by thick brackets drawn above the row, each bracket labeled 'cache line'. Left grid titled 'row by row': a single continuous teal arrow snakes through the cells left to right along row 1, then row 2, then row 3, then row 4. Caption under the left grid: 'every element of each cache line is used; the prefetcher keeps up'. Right grid titled 'column by column': a black arrow goes straight down the first column, touching one cell in each row; each touched cell is shaded, and the whole 8-cell group (cache line) it belongs to is lightly outlined to show it was loaded. Caption under the right grid: 'each step loads a new cache line but uses 1 of its 8 elements'."
     },
     {
-      "id": "16-false-sharing",
-      "anchor": "16-contention-false-sharing:### False sharing",
+      "id": "17-false-sharing",
+      "anchor": "17-contention-false-sharing:### Different variables can still share memory",
       "alt_en": "Two cores writing different counters on the same cache line bounce it back and forth; padding gives each counter its own line",
       "alt_es": "Dos núcleos que escriben contadores distintos en la misma línea de caché se la pasan de uno a otro; el padding da a cada contador su propia línea",
       "prompt": "Two panels stacked vertically. Top panel titled 'false sharing': two boxes 'core 0' and 'core 1' at the left and right edges, each with its own small 'L1 cache' box. In the middle, one horizontal cache line drawn as 8 cells labeled 'one 64-byte cache line', with cell 0 labeled 'shard[0]' and cell 1 labeled 'shard[1]'. Core 0 writes shard[0] and core 1 writes shard[1]; a big curved double-headed arrow between the two L1 boxes labeled 'the whole line ping-pongs: invalidate, transfer, repeat'. Bottom panel titled 'padded': two separate cache lines, each containing one shard followed by hatched cells labeled '56 bytes padding', core 0 connected only to the first line and core 1 only to the second, with a teal note 'no sharing: each core keeps its own line'."
     },
     {
-      "id": "17-pipeline",
-      "anchor": "17-branch-prediction:### Pipelines and speculation",
+      "id": "18-pipeline",
+      "anchor": "18-branch-prediction:### Guessing the next path",
       "alt_en": "The CPU guesses which way a branch goes and starts executing; a wrong guess throws that work away",
       "alt_es": "La CPU adivina hacia dónde va un salto y empieza a ejecutar; una predicción fallida tira ese trabajo",
       "prompt": "Two horizontal timelines stacked vertically, each drawn as a row of equal-width time slots like a conveyor belt, with a time arrow underneath pointing right. In both rows, the first slot is a diamond labeled 'branch: if v >= t'. Top row titled 'prediction correct': after the diamond, a continuous run of instruction boxes 'i1', 'i2', 'i3', 'i4', 'i5', 'i6', 'i7', 'i8' fills every slot with no gaps, with a teal note 'speculative work is kept: the branch was almost free'. Bottom row titled 'prediction wrong': after the diamond, instruction boxes 'i1' to 'i4' are drawn crossed out with a bracket labeled 'wrong path: thrown away', followed by a stretch of empty hatched slots labeled 'pipeline refill: ~15-20 cycles lost', and only then boxes 'j1', 'j2' labeled 'the right path finally starts'. Below both rows, a small note: 'random data: about half the guesses are wrong; sorted data: almost all are right'."
-    },
-    {
-      "id": "18-pgo-loop",
-      "anchor": "18-pgo:## The Concept: Feeding the Profile to the Compiler",
-      "alt_en": "PGO: build, run under real load, collect a CPU profile, and rebuild with it so the compiler optimizes the hot paths",
-      "alt_es": "PGO: compila, ejecuta con carga real, captura un perfil de CPU y recompila con él para que el compilador optimice las rutas calientes",
-      "prompt": "A circular loop of four hand-drawn boxes connected by clockwise arrows: '1. go build', '2. run with real traffic', '3. collect CPU profile (pprof)', '4. save as default.pgo next to main', and an arrow back to '1. go build'. Inside the loop, a teal-accented box labeled 'compiler with a profile' listing three hand-lettered bullet points: 'hot calls: inline budget 80 -> 2000', 'hot interface calls: devirtualize', 'hot code: better block layout'."
     }
   ]
 }

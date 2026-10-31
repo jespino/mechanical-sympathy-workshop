@@ -26,8 +26,8 @@ clean:
 #   make bench LAB=03            benchmark your after.go against before.go
 #   make solution LAB=03         same, but with the reference solution.go
 #   make bench LAB=03 COUNT=10   more runs for less noisy results
-#   make bench LAB=16 CPU=1,4,16 run with several GOMAXPROCS values
-#   make pgo                     module 18: benchmark without PGO, collect a
+#   make bench LAB=17 CPU=1,4,16 run with several GOMAXPROCS values
+#   make pgo                     module 15: benchmark without PGO, collect a
 #                                CPU profile, rebuild with it and compare
 #   make test-labs               check that every lab builds and passes tests
 
@@ -43,11 +43,11 @@ solution:
 	@$(MAKE) --no-print-directory bench LAB=$(LAB) COUNT=$(COUNT) BENCH='$(BENCH)' CPU=$(CPU) TAGS="-tags solution"
 
 pgo:
-	cd labs && go test -pgo=off -run='^$$' -bench=Ingest -benchmem -count=$(COUNT) ./18-pgo/ | tee 18-off.bench.txt
-	cd labs && go test -pgo=off -run='^$$' -bench=Ingest -cpuprofile=18-cpu.prof ./18-pgo/ > /dev/null
-	cd labs && go test -pgo=18-cpu.prof -run='^$$' -bench=Ingest -benchmem -count=$(COUNT) ./18-pgo/ | tee 18-pgo.bench.txt
-	benchstat labs/18-off.bench.txt labs/18-pgo.bench.txt
-	rm -f labs/18-pgo.test
+	cd labs && go test -pgo=off -run='^$$' -bench=Ingest -benchmem -count=$(COUNT) ./15-pgo/ | tee 15-off.bench.txt
+	cd labs && go test -pgo=off -run='^$$' -bench=Ingest -cpuprofile=15-cpu.prof ./15-pgo/ > /dev/null
+	cd labs && go test -pgo=15-cpu.prof -run='^$$' -bench=Ingest -benchmem -count=$(COUNT) ./15-pgo/ | tee 15-pgo.bench.txt
+	benchstat labs/15-off.bench.txt labs/15-pgo.bench.txt
+	rm -f labs/15-pgo.test
 
 test-labs:
 	cd labs && go vet ./... && go vet -tags solution ./...

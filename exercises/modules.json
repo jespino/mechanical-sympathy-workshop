@@ -19,11 +19,6 @@
       "id": "hardware",
       "en": "Part IV · Memory and the hardware",
       "es": "Parte IV · La memoria y el hardware"
-    },
-    {
-      "id": "together",
-      "en": "Part V · Putting it all together",
-      "es": "Parte V · Juntándolo todo"
     }
   ],
   "modules": [
@@ -111,11 +106,11 @@
       "enabled": true,
       "en": {
         "title": "Inlining",
-        "description": "See the inlining budget and cost model at work, and get a hot function under the budget."
+        "description": "Split shopping-cart pricing into a small common case and a coupon helper, then measure inlining."
       },
       "es": {
         "title": "Inlining",
-        "description": "El presupuesto de inlining y su modelo de coste: consigue que una función caliente quepa en él."
+        "description": "Separa el precio de un carrito en un caso común pequeño y un helper para cupones, y mide el inlining."
       }
     },
     {
@@ -124,11 +119,11 @@
       "enabled": true,
       "en": {
         "title": "Inlining × Escape Analysis",
-        "description": "Inlining moves allocation decisions into the caller. Use the outlined-constructor pattern to remove allocations."
+        "description": "Keep customer signup validation in a helper so a small constructor can avoid heap allocations."
       },
       "es": {
         "title": "Inlining × Escape Analysis",
-        "description": "El inlining mueve la decisión de asignar al llamador. Usa el patrón del constructor «outlined» para eliminar asignaciones."
+        "description": "Separa la validación de altas de clientes para que un constructor pequeño pueda evitar el heap."
       }
     },
     {
@@ -136,12 +131,12 @@
       "part": "allocations",
       "enabled": true,
       "en": {
-        "title": "Interfaces, Boxing and Generics",
-        "description": "itabs, convT allocations, devirtualization and GC-shape stenciling: what an interface really costs."
+        "title": "Interfaces and Boxing",
+        "description": "Two small price exercises: avoid boxing allocations, then inline a budget check."
       },
       "es": {
-        "title": "Interfaces, Boxing y Genéricos",
-        "description": "itabs, asignaciones convT, desvirtualización y GC-shape stenciling: lo que cuesta de verdad una interfaz."
+        "title": "Interfaces y Boxing",
+        "description": "Dos ejercicios pequeños con precios: evita el boxing y después integra una comprobación de presupuesto."
       }
     },
     {
@@ -150,11 +145,11 @@
       "enabled": true,
       "en": {
         "title": "Bounds Check Elimination",
-        "description": "See how the SSA prove pass removes bounds checks, and give it the hints it needs."
+        "description": "Calculate receipt totals while helping the compiler avoid repeated slice bounds checks."
       },
       "es": {
         "title": "Eliminación de Bounds Checks",
-        "description": "Cómo el pase prove de SSA elimina comprobaciones de límites, y cómo darle las pistas que necesita."
+        "description": "Calcula totales de tickets ayudando al compilador a evitar comprobaciones repetidas de límites."
       }
     },
     {
@@ -163,11 +158,11 @@
       "enabled": true,
       "en": {
         "title": "Struct Layout and Size Classes",
-        "description": "Alignment, padding and allocator size classes. Reorder fields and drop a size class."
+        "description": "Reorder shopping-order fields to reduce padding and memory use."
       },
       "es": {
         "title": "Layout de Structs y Clases de Tamaño",
-        "description": "Alineamiento, padding y clases de tamaño del allocator. Reordena campos y baja de clase."
+        "description": "Reordena los campos de pedidos para reducir relleno y uso de memoria."
       }
     },
     {
@@ -176,11 +171,11 @@
       "enabled": true,
       "en": {
         "title": "sync.Pool",
-        "description": "Per-P caches, the victim cache and GC clearing. Learn when pooling helps and when it hurts."
+        "description": "Reuse temporary buffers safely and measure the allocations and GC work you avoid."
       },
       "es": {
         "title": "sync.Pool",
-        "description": "Cachés por P, la victim cache y la limpieza en cada GC. Cuándo ayuda reutilizar objetos y cuándo perjudica."
+        "description": "Reutiliza buffers temporales con seguridad y mide las asignaciones y el trabajo del GC que evitas."
       }
     },
     {
@@ -189,11 +184,11 @@
       "enabled": true,
       "en": {
         "title": "Helping the Garbage Collector",
-        "description": "The pacer, GOGC, GOMEMLIMIT and pointer-free heaps: make the GC's job cheaper."
+        "description": "Reduce pointer-heavy storage and explore the memory and CPU tradeoff of GC settings."
       },
       "es": {
         "title": "Ayudando al Garbage Collector",
-        "description": "El pacer, GOGC, GOMEMLIMIT y heaps sin punteros: abarata el trabajo del GC."
+        "description": "Reduce los datos con muchos punteros y explora el equilibrio entre memoria y CPU de los ajustes del GC."
       }
     },
     {
@@ -202,11 +197,11 @@
       "enabled": true,
       "en": {
         "title": "Goroutines, Channels and the Scheduler",
-        "description": "What a goroutine and a channel operation really cost, and why batching wins."
+        "description": "Apply sale discounts in batches and compare workers with a simple loop."
       },
       "es": {
         "title": "Goroutines, Channels y el Scheduler",
-        "description": "Lo que cuestan realmente una goroutine y una operación sobre un channel, y por qué agrupar trabajo gana."
+        "description": "Aplica descuentos en lotes y compara workers con un bucle sencillo."
       }
     },
     {
@@ -223,47 +218,8 @@
       }
     },
     {
-      "slug": "15-cpu-caches",
-      "part": "hardware",
-      "enabled": true,
-      "en": {
-        "title": "CPU Caches and Data Locality",
-        "description": "Cache lines, prefetchers and pointer chasing: lay out your data the way the CPU likes to read it."
-      },
-      "es": {
-        "title": "Cachés de CPU y Localidad de Datos",
-        "description": "Líneas de caché, prefetchers y persecución de punteros: organiza tus datos como a la CPU le gusta leerlos."
-      }
-    },
-    {
-      "slug": "16-contention-false-sharing",
-      "part": "hardware",
-      "enabled": true,
-      "en": {
-        "title": "Contention and False Sharing",
-        "description": "Mutexes, atomics, sharding and cache-line ping-pong: make concurrent code scale."
-      },
-      "es": {
-        "title": "Contención y False Sharing",
-        "description": "Mutex, atómicos, sharding y el ping-pong de líneas de caché: haz que el código concurrente escale."
-      }
-    },
-    {
-      "slug": "17-branch-prediction",
-      "part": "hardware",
-      "enabled": true,
-      "en": {
-        "title": "Branch Prediction",
-        "description": "Pipelines, mispredictions and CMOV: why sorted data runs faster, and how to go branchless."
-      },
-      "es": {
-        "title": "Predicción de Saltos",
-        "description": "Pipelines, predicciones fallidas y CMOV: por qué los datos ordenados van más rápido y cómo eliminar saltos."
-      }
-    },
-    {
-      "slug": "18-pgo",
-      "part": "together",
+      "slug": "15-pgo",
+      "part": "runtime",
       "enabled": true,
       "en": {
         "title": "Profile-Guided Optimization",
@@ -275,16 +231,42 @@
       }
     },
     {
-      "slug": "19-capstone",
-      "part": "together",
+      "slug": "16-cpu-caches",
+      "part": "hardware",
       "enabled": true,
       "en": {
-        "title": "Capstone: Optimize a Log Analyzer",
-        "description": "Profile a realistic program, fix it one step at a time, and back every change with benchstat."
+        "title": "CPU Caches and Data Locality",
+        "description": "Total daily sales and account balances using memory-friendly access patterns."
       },
       "es": {
-        "title": "Proyecto Final: Optimiza un Analizador de Logs",
-        "description": "Perfila un programa realista, mejóralo paso a paso y respalda cada cambio con benchstat."
+        "title": "Cachés de CPU y Localidad de Datos",
+        "description": "Suma ventas diarias y saldos de cuentas recorriendo la memoria de forma eficiente."
+      }
+    },
+    {
+      "slug": "17-contention-false-sharing",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "Contention and False Sharing",
+        "description": "Compare shared counters, split frequent writes and keep independent counters on separate cache lines."
+      },
+      "es": {
+        "title": "Contención y False Sharing",
+        "description": "Compara contadores compartidos, separa escrituras frecuentes y evita la interferencia al compartir líneas de caché."
+      }
+    },
+    {
+      "slug": "18-branch-prediction",
+      "part": "hardware",
+      "enabled": true,
+      "en": {
+        "title": "Branch Prediction",
+        "description": "Filter product prices and compare branches on sorted and random data."
+      },
+      "es": {
+        "title": "Predicción de Saltos",
+        "description": "Filtra precios de productos y compara saltos con datos ordenados y aleatorios."
       }
     }
   ]

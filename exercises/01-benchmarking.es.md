@@ -145,7 +145,7 @@ go test ./01-benchmarking/
 make bench LAB=01
 ```
 
-Estos son los resultados con la solución de referencia (`make solution LAB=01`) en un AMD Ryzen AI MAX+ 395:
+Estos son los resultados con la solución de referencia (`make solution LAB=01`) en mi máquina:
 
 ```
          │   before    │               after                │

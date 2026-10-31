@@ -2,61 +2,61 @@
 
 package structlayout
 
-// ParticleAfter orders its fields from the largest alignment to the smallest:
-// three float64 (24 bytes), a uint32 (4), a uint16 (2) and two bools (2).
+// OrderAfter orders its fields from the largest alignment to the smallest:
+// three int64 (24 bytes), a uint32 (4), a uint16 (2) and two bools (2).
 // That adds up to exactly 32 bytes with no padding at all, down from 56.
-type ParticleAfter struct {
-	X      float64
-	Y      float64
-	Z      float64
-	ID     uint32
-	Kind   uint16
-	Active bool
-	Alive  bool
+type OrderAfter struct {
+	SubtotalCents int64
+	ShippingCents int64
+	DiscountCents int64
+	ID            uint32
+	Items         uint16
+	Paid          bool
+	Delivered     bool
 }
 
-// SpawnAfter allocates n particles, one heap object each. Each object is now
+// CreateOrdersAfter allocates n orders, one heap object each. Each object is now
 // 32 bytes, which is exactly a size class, instead of 56 rounded up to 64.
-func SpawnAfter(n int) []*ParticleAfter {
-	out := make([]*ParticleAfter, n)
+func CreateOrdersAfter(n int) []*OrderAfter {
+	out := make([]*OrderAfter, n)
 	for i := range out {
-		out[i] = &ParticleAfter{
-			Active: i%3 != 0,
-			Alive:  true,
-			Kind:   uint16(i % 7),
-			X:      float64(i),
-			Y:      float64(i) * 0.5,
-			Z:      float64(i) * 0.25,
-			ID:     uint32(i),
+		out[i] = &OrderAfter{
+			Paid:          i%3 != 0,
+			Delivered:     true,
+			Items:         uint16(i % 7),
+			SubtotalCents: int64(i),
+			ShippingCents: int64(i) / 2,
+			DiscountCents: int64(i) / 4,
+			ID:            uint32(i),
 		}
 	}
 	return out
 }
 
-// FillAfter is unchanged: the struct literal uses field names, so the order
+// FillOrdersAfter is unchanged: the struct literal uses field names, so the order
 // of the fields in the type doesn't matter here.
-func FillAfter(ps []ParticleAfter) {
+func FillOrdersAfter(ps []OrderAfter) {
 	for i := range ps {
-		ps[i] = ParticleAfter{
-			Active: i%3 != 0,
-			Alive:  true,
-			Kind:   uint16(i % 7),
-			X:      float64(i),
-			Y:      float64(i) * 0.5,
-			Z:      float64(i) * 0.25,
-			ID:     uint32(i),
+		ps[i] = OrderAfter{
+			Paid:          i%3 != 0,
+			Delivered:     true,
+			Items:         uint16(i % 7),
+			SubtotalCents: int64(i),
+			ShippingCents: int64(i) / 2,
+			DiscountCents: int64(i) / 4,
+			ID:            uint32(i),
 		}
 	}
 }
 
-// SumActiveAfter is unchanged too. It is faster only because two particles
+// TotalPaidAfter is unchanged too. It is faster only because two orders
 // now fit in each 64-byte cache line, so the loop reads 43% less memory.
-func SumActiveAfter(ps []ParticleAfter) float64 {
-	var sum float64
+func TotalPaidAfter(ps []OrderAfter) int64 {
+	var sum int64
 	for i := range ps {
 		p := &ps[i]
-		if p.Active {
-			sum += p.X + p.Y + p.Z
+		if p.Paid {
+			sum += p.SubtotalCents + p.ShippingCents - p.DiscountCents
 		}
 	}
 	return sum

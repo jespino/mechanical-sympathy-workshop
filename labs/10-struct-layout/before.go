@@ -5,59 +5,59 @@
 // baseline that after.go is benchmarked against.
 package structlayout
 
-// ParticleBefore has its fields in "logical" order: each flag sits next to
+// OrderBefore has its fields in "logical" order: each flag sits next to
 // the value it describes. The compiler keeps that order, so every small field
 // in front of an 8-byte field drags padding along with it.
-type ParticleBefore struct {
-	Active bool
-	X      float64
-	Kind   uint16
-	Y      float64
-	Alive  bool
-	Z      float64
-	ID     uint32
+type OrderBefore struct {
+	Paid          bool
+	SubtotalCents int64
+	Items         uint16
+	ShippingCents int64
+	Delivered     bool
+	DiscountCents int64
+	ID            uint32
 }
 
-// SpawnBefore allocates n particles, one heap object each.
-func SpawnBefore(n int) []*ParticleBefore {
-	out := make([]*ParticleBefore, n)
+// CreateOrdersBefore allocates n orders, one heap object each.
+func CreateOrdersBefore(n int) []*OrderBefore {
+	out := make([]*OrderBefore, n)
 	for i := range out {
-		out[i] = &ParticleBefore{
-			Active: i%3 != 0,
-			Alive:  true,
-			Kind:   uint16(i % 7),
-			X:      float64(i),
-			Y:      float64(i) * 0.5,
-			Z:      float64(i) * 0.25,
-			ID:     uint32(i),
+		out[i] = &OrderBefore{
+			Paid:          i%3 != 0,
+			Delivered:     true,
+			Items:         uint16(i % 7),
+			SubtotalCents: int64(i),
+			ShippingCents: int64(i) / 2,
+			DiscountCents: int64(i) / 4,
+			ID:            uint32(i),
 		}
 	}
 	return out
 }
 
-// FillBefore fills ps with the same particles SpawnBefore creates, but
+// FillOrdersBefore fills ps with the same orders CreateOrdersBefore creates, but
 // stored by value in one contiguous slice.
-func FillBefore(ps []ParticleBefore) {
+func FillOrdersBefore(ps []OrderBefore) {
 	for i := range ps {
-		ps[i] = ParticleBefore{
-			Active: i%3 != 0,
-			Alive:  true,
-			Kind:   uint16(i % 7),
-			X:      float64(i),
-			Y:      float64(i) * 0.5,
-			Z:      float64(i) * 0.25,
-			ID:     uint32(i),
+		ps[i] = OrderBefore{
+			Paid:          i%3 != 0,
+			Delivered:     true,
+			Items:         uint16(i % 7),
+			SubtotalCents: int64(i),
+			ShippingCents: int64(i) / 2,
+			DiscountCents: int64(i) / 4,
+			ID:            uint32(i),
 		}
 	}
 }
 
-// SumActiveBefore adds up X+Y+Z for every active particle.
-func SumActiveBefore(ps []ParticleBefore) float64 {
-	var sum float64
+// TotalPaidBefore adds subtotal and shipping, minus discount, for paid orders.
+func TotalPaidBefore(ps []OrderBefore) int64 {
+	var sum int64
 	for i := range ps {
 		p := &ps[i]
-		if p.Active {
-			sum += p.X + p.Y + p.Z
+		if p.Paid {
+			sum += p.SubtotalCents + p.ShippingCents - p.DiscountCents
 		}
 	}
 	return sum

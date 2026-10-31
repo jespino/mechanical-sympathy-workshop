@@ -201,7 +201,7 @@ var idSegment = regexp.MustCompile(`/[0-9]+`)
 make bench LAB=02
 ```
 
-Results with the reference solution (`make solution LAB=02`) on an AMD Ryzen AI MAX+ 395:
+Results with the reference solution (`make solution LAB=02`) on my machine:
 
 ```
           │    before    │               after                │
@@ -216,8 +216,6 @@ Report-32   15.897Mi ± 0%   1.684Mi ± 0%  -89.40% (p=0.002 n=6)
           │  allocs/op   │  allocs/op   vs base               │
 Report-32   225.08k ± 0%   55.04k ± 0%  -75.55% (p=0.002 n=6)
 ```
-
-Clean up the profiles when you're done: `rm -f cpu.prof mem.prof 02-profiling.test`. (When you pass a profiling flag, `go test` keeps the test binary next to the profile.)
 
 ## Understanding the Results
 
