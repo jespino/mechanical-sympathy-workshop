@@ -1,73 +1,36 @@
 # Profiling 101
 
-> **¿Quieres saber más?** Lee [`runtime/pprof/pprof.go`](https://github.com/golang/go/blob/go1.27.0/src/runtime/pprof/pprof.go) (busca `StartCPUProfile`), los temporizadores de profiling por hilo en [`runtime/os_linux.go`](https://github.com/golang/go/blob/go1.27.0/src/runtime/os_linux.go) (`setThreadCPUProfiler`, `validSIGPROF`), el manejador de señal `sigprof` en [`runtime/proc.go`](https://github.com/golang/go/blob/go1.27.0/src/runtime/proc.go) y el muestreo del heap en [`runtime/malloc.go`](https://github.com/golang/go/blob/go1.27.0/src/runtime/malloc.go) y [`runtime/mprof.go`](https://github.com/golang/go/blob/go1.27.0/src/runtime/mprof.go).
-
 Un benchmark te dice *lo rápido* que es algo. No te dice *por qué*. Para eso necesitas un profiler, y Go tiene uno integrado en el runtime: sin instrumentación, sin recompilar, basta con un flag. En este módulo veremos cómo recogen sus datos los profilers de CPU y de heap, porque saberlo te dice hasta qué punto puedes fiarte de ellos. Después usaremos `go tool pprof` para encontrar un punto caliente que no está donde te imaginarías.
 
 ## Objetivos de Aprendizaje
 
 Al terminar este módulo:
 
-- Entenderás cómo muestrea tu programa el profiler de CPU (SIGPROF, 100 Hz, temporizadores por hilo en Linux)
-- Entenderás cómo muestrea las asignaciones el profiler de heap (una cada ~512 KB) y la diferencia entre `alloc_space` e `inuse_space`
+- Entenderás cómo muestrea tu programa el profiler de CPU (una instantánea de la pila 100 veces por segundo)
+- Entenderás cómo muestrea las asignaciones el profiler de heap (más o menos una cada 512 KB) y la diferencia entre `alloc_space` e `inuse_space`
 - Obtendrás perfiles desde benchmarks (`-cpuprofile`, `-memprofile`) y desde programas (`runtime/pprof`, `net/http/pprof`)
-- Sabrás leer la salida de `pprof`: `flat` frente a `cum`, `-top`, `-list`, `-peek` y el flame graph
+- Sabrás leer la salida de `pprof`: `flat` frente a `cum`, `-top`, `-list` y el flame graph
 - Encontrarás y arreglarás un punto caliente escondido tras una función auxiliar
 
 ## El Concepto: Profilers de Muestreo
 
 Los profilers de Go son profilers de **muestreo**. No registran cada llamada a función, algo que sería demasiado lento. En su lugar toman una instantánea cada cierto tiempo y cuentan cuántas caen en cada sitio. Más instantáneas significa más tiempo (o más bytes).
 
-### El profiler de CPU: una señal 100 veces por segundo
+### El profiler de CPU: una instantánea 100 veces por segundo
 
-`pprof.StartCPUProfile` fija la frecuencia en el código:
-
-```go
-// 100 Hz is a reasonable choice: it is frequent enough to
-// produce useful data, rare enough not to bog down the
-// system, and a nice round number to make it easy to
-// convert sample counts to seconds. Instead of requiring
-// each client to specify the frequency, we hard code it.
-const hz = 100
-```
+Mientras el profiler de CPU está activo, el runtime de Go interrumpe tu programa 100 veces por segundo (cada 10 ms) y anota qué estaba haciendo en ese momento: la función que se estaba ejecutando y las funciones que la llamaron (la **pila**). Al final, `pprof` cuenta en cuántas instantáneas aparece cada función. Una función que aparece en la mitad usó más o menos la mitad del tiempo de CPU.
 
 ![El profiler de CPU interrumpe el programa 100 veces por segundo y anota el stack](images/02-sampling.webp)
 
-y llama a `runtime.SetCPUProfileRate(hz)`. A partir de ahí, el kernel entrega una señal `SIGPROF` cada 10 ms **de tiempo de CPU consumido**. El manejador de señales del runtime llama a `sigprof` (en `proc.go`), que recorre la pila de la goroutine interrumpida (hasta `maxCPUProfStack = 64` frames) y la añade a un buffer que una goroutine en segundo plano va escribiendo como perfil.
+El reloj que dispara esas instantáneas cuenta **tiempo de CPU**, no tiempo real, y cada hilo tiene el suyo. Qué significa esto para ti:
 
-*Qué* reloj genera esas señales importa. El mecanismo clásico de Unix, `setitimer(ITIMER_PROF)`, es de todo el proceso: el kernel elige algún hilo para entregarle la señal y, con muchos hilos ocupados, se pierden muestras o caen en el sitio equivocado. En Linux, Go además crea **un temporizador por hilo** con `timer_create(CLOCK_THREAD_CPUTIME_ID)`, en `setThreadCPUProfiler`:
-
-```go
-spec.it_value.setNsec(1 + int64(cheaprandn(uint32(1e9/hz))))
-spec.it_interval.setNsec(1e9 / int64(hz))
-
-var timerid int32
-var sevp sigevent
-sevp.notify = _SIGEV_THREAD_ID
-sevp.signo = _SIGPROF
-sevp.sigev_notify_thread_id = int32(mp.procid)
-ret := timer_create(_CLOCK_THREAD_CPUTIME_ID, &sevp, &timerid)
-```
-
-Cada hilo recibe una señal por cada 10 ms de *su propio* tiempo de CPU. El retardo inicial aleatorio hace que incluso un hilo que solo se ejecuta 1 ms tenga un 10% de probabilidad de salir en el perfil, en lugar de no aparecer nunca. Como los dos temporizadores pueden estar activos, `validSIGPROF` comprueba el origen de la señal (`_SI_TIMER` frente a `_SI_KERNEL`) para no contar dos veces el mismo tiempo de CPU.
-
-Lo que esto significa para ti:
-
-- **Las muestras miden tiempo de CPU, no tiempo real.** Una goroutine esperando en un canal, un lock o la red no consume CPU, así que no aparece. (Para eso usa los profilers de block, mutex o el trace. Para goroutines bloqueadas *para siempre*, en un canal o lock que ya ninguna goroutine en ejecución puede alcanzar, Go 1.27 añade el perfil `goroutineleak`, también servido en `/debug/pprof/goroutineleak`.)
-- **El total de muestras puede superar el tiempo real.** Dos hilos ocupados durante 1 s producen 2 s de muestras. Más abajo verás `Duration: 1.20s, Total samples = 1.59s (132.93%)`: lo que sobra es sobre todo el garbage collector trabajando en otros hilos.
-- **Es estadístico.** 1 s de CPU te da unas ~100 muestras. Una función al 2% puede ser ruido. Si necesitas detalle, perfila durante más tiempo.
+- **Las esperas no aparecen.** Una goroutine bloqueada en un canal, un lock o la red no está usando la CPU, así que nunca se la pilla. Go tiene otros perfiles para eso, como los de bloqueo y de mutex.
+- **El total de muestras puede superar el tiempo real.** Dos hilos ocupados durante 1 s producen 2 s de muestras.
+- **Es estadística, no una cuenta exacta.** 1 s de CPU te da unas 100 instantáneas, así que una función al 2% puede ser ruido.
 
 ### El profiler de heap: una muestra cada 512 KB
 
-Las asignaciones se muestrean por bytes, no por tiempo. De `mprof.go`:
-
-```go
-// The profiler aims to sample an average of
-// one allocation per MemProfileRate bytes allocated.
-var MemProfileRate int = 512 * 1024
-```
-
-Cada `mcache` lleva una cuenta atrás, `nextSample`. Cuando una asignación la cruza, `profilealloc` registra la pila de esa asignación y saca una nueva cuenta atrás de una distribución exponencial con media `MemProfileRate` (`nextSample` en `malloc.go`), de forma que los puntos de muestreo se reparten al azar en lugar de caer cada N objetos. Después `pprof` escala cada muestra para estimar los totales reales. Igual que en el perfil de CPU, los números pequeños son estimaciones: pon `runtime.MemProfileRate = 1` (o `go test -memprofilerate=1`) para registrar todas las asignaciones, a cambio de un coste.
+El profiler de heap no interrumpe tu programa. En su lugar, el allocator lleva la cuenta de cuántos bytes se han asignado y, más o menos cada 512 KB, anota la pila de la asignación que ocurre en ese momento. Después `pprof` escala las muestras para estimar los totales reales, así que aquí también los números pequeños son estimaciones. Si necesitas todas las asignaciones, `go test -memprofilerate=1` las registra todas, pero hace tu programa bastante más lento, así que úsalo solo cuando necesites números exactos.
 
 Un perfil de heap contiene cuatro valores por pila:
 
@@ -76,18 +39,20 @@ Un perfil de heap contiene cuatro valores por pila:
 | `alloc_space` / `alloc_objects` | Todo lo asignado desde que arrancó el programa, aunque ya sea basura |
 | `inuse_space` / `inuse_objects` | Lo que seguía vivo en el GC más reciente |
 
-El perfil `heap` muestra por defecto `inuse_space` (lo que está usando memoria *ahora*: buscar fugas), y el perfil `allocs` son los mismos datos mostrando por defecto `alloc_space` (lo que genera trabajo para el allocator y el GC: buscar velocidad). `go test -memprofile` escribe el perfil `allocs`, después de un `runtime.GC()` para "materialize all statistics".
+El perfil `heap` muestra por defecto `inuse_space`: lo que está usando memoria *ahora*, que es lo que quieres para buscar fugas. El perfil `allocs` tiene los mismos datos pero muestra por defecto `alloc_space`: todo lo que generó trabajo para el allocator y el GC, que es lo que quieres para hacer el código más rápido. `go test -memprofile` escribe el perfil `allocs`.
 
 ### Cómo obtener perfiles
 
-Desde benchmarks, que es lo que usaremos en los laboratorios:
+Hay tres formas habituales de obtener un perfil, según lo que estés ejecutando.
+
+La más fácil, y la que usaremos en los laboratorios, es pedírselo a `go test` mientras ejecuta un benchmark. Añade `-cpuprofile` para un perfil de CPU, o `-memprofile` para uno de heap, y dale un nombre de fichero:
 
 ```bash
 go test -run '^$' -bench Foo -cpuprofile cpu.prof ./pkg/
 go test -run '^$' -bench Foo -memprofile mem.prof ./pkg/
 ```
 
-Desde un programa, con `runtime/pprof`:
+Cuando el código que quieres mirar no es un benchmark sino un programa normal, puedes arrancar y parar tú el profiler de CPU con el paquete `runtime/pprof`. Todo lo que se ejecute entre esas dos llamadas acaba en el fichero:
 
 ```go
 f, _ := os.Create("cpu.prof")
@@ -95,11 +60,13 @@ pprof.StartCPUProfile(f)
 defer pprof.StopCPUProfile()
 ```
 
-Desde un servidor en marcha, importando `net/http/pprof` por su efecto secundario. Registra handlers bajo `/debug/pprof/` en `http.DefaultServeMux`:
+Y de un servidor puedes sacar un perfil mientras sigue en marcha atendiendo peticiones. Importa `net/http/pprof` con el identificador en blanco: no llamas a nada del paquete, el import por sí solo añade unas cuantas páginas bajo `/debug/pprof/` a tu servidor HTTP (si usa `http.DefaultServeMux`):
 
 ```go
 import _ "net/http/pprof"
 ```
+
+Después apunta `go tool pprof` a esas páginas. Descarga el perfil y lo abre, igual que si fuera un fichero. El de CPU graba durante los segundos que le pidas:
 
 ```bash
 go tool pprof 'http://localhost:6060/debug/pprof/profile?seconds=5'   # CPU
@@ -115,14 +82,7 @@ Cada informe de `pprof` tiene dos números por función:
 
 ![flat cuenta las muestras en las que la propia función se ejecutaba, cum incluye todo lo que llamó](images/02-flat-cum.webp)
 
-`flat` te dice qué código quema ciclos. `cum` te dice qué *decisión* es la responsable. Un programa lento suele tener un perfil flat en el que nada destaca (un malloc aquí, una búsqueda en un map allá) mientras una función tiene un `cum` enorme. Los comandos que usarás:
-
-| Comando | Muestra |
-|---|---|
-| `-top` | Funciones ordenadas por flat. Añade `-cum` para ordenar por acumulado |
-| `-list Regexp` | El código fuente anotado de las funciones que coinciden, con el tiempo por línea |
-| `-peek Regexp` | Quién llama a las funciones que coinciden y a quién llaman ellas |
-| `-http=:` | Interfaz web con un grafo, un flame graph (View → Flame Graph) y vistas del código |
+`flat` te dice qué código quema ciclos. `cum` te dice qué *decisión* es la responsable. Un programa lento suele tener un perfil flat en el que nada destaca (un malloc aquí, una búsqueda en un map allá) mientras una función tiene un `cum` enorme. Eso normalmente significa que el problema no es un trozo de código lento, sino una decisión en esa función, como llamar a algo caro dentro de un bucle o repetir el mismo trabajo una y otra vez. Esa función es donde deberías mirar primero.
 
 ## El Laboratorio
 
@@ -171,7 +131,7 @@ Duration: 1.20s, Total samples = 1.59s (132.93%)
      ...
 ```
 
-La vista flat es un caos: ninguna función pasa del 7%. Mucho malloc, algo de regexp, algo de GC. (En Go 1.27 el coste del allocator está aún más repartido: más abajo encontrarás rutinas especializadas por tamaño como `runtime.mallocgcSmallScanNoHeaderSC5`, una por clase de tamaño; mira el [módulo 03](03-preallocation.md).) Ahora ordena por acumulado:
+La vista flat es un caos: ninguna función pasa del 7%. Mucho malloc, algo de regexp, algo de GC. Ahora ordena por acumulado, añadiendo el flag `-cum`:
 
 ```bash
 go tool pprof -top -cum cpu.prof | head -16
@@ -189,19 +149,7 @@ go tool pprof -top -cum cpu.prof | head -16
          0     0% 14.47%      0.20s 12.58%  runtime.gcBgMarkWorker
 ```
 
-Eso ya cuenta una historia: la mayor parte de `ReportBefore` es `normalizePathBefore`, y la mayor parte de *esta* es `regexp.MustCompile`. Confirma quién la llama:
-
-```bash
-go tool pprof -peek 'regexp.MustCompile$' cpu.prof
-```
-
-```
-                                             0.79s   100% |   labs/02-profiling.normalizePathBefore
-         0     0%     0%      0.79s 49.69%                | regexp.MustCompile
-                                             0.79s   100% |   regexp.Compile (inline)
-```
-
-Y mira el coste línea a línea:
+Eso ya cuenta una historia: la mayor parte de `ReportBefore` es `normalizePathBefore`, y la mayor parte de *esta* es `regexp.MustCompile`. Mira el coste línea a línea con `-list`:
 
 ```bash
 go tool pprof -list 'normalizePathBefore' cpu.prof
@@ -213,6 +161,10 @@ go tool pprof -list 'normalizePathBefore' cpu.prof
 ```
 
 Por último, abre el flame graph y encuentra lo mismo de forma visual: `go tool pprof -http=: cpu.prof` y después *View → Flame Graph*. El ancho de cada barra es su `cum`.
+
+![El flame graph de pprof de ReportBefore: normalizePathBefore ocupa casi todo el ancho, y regexp.MustCompile la mayor parte de eso](images/02-flame-graph.webp)
+
+`normalizePathBefore` ocupa casi todo el ancho y, dentro de ella, `regexp.MustCompile` es la barra más ancha.
 
 ### Paso 3: Confírmalo con el perfil de heap
 
@@ -231,7 +183,7 @@ Showing nodes accounting for 1.33GB, 99.12% of 1.34GB total
     0.06GB  4.48% 86.06%     0.06GB  4.48%  strings.Fields
 ```
 
-**El 88% de todos los bytes** viene de compilar la expresión regular. Prueba también `-sample_index=inuse_space`: está casi vacío, porque todo eso es basura de vida corta. No es una fuga, solo mucho trabajo para el allocator y el GC (eso es el `gcBgMarkWorker` del perfil de CPU).
+**El 88% de todos los bytes** viene de compilar la expresión regular. Todo eso es trabajo para el allocator y el GC (eso es el `gcBgMarkWorker` del perfil de CPU).
 
 ### Paso 4: Arréglalo
 
@@ -249,7 +201,7 @@ var idSegment = regexp.MustCompile(`/[0-9]+`)
 make bench LAB=02
 ```
 
-Resultados con la solución de referencia (`make solution LAB=02`) en un AMD Ryzen AI MAX+ 395:
+Resultados con la solución de referencia (`make solution LAB=02`) en mi máquina:
 
 ```
           │    before    │               after                │
@@ -264,8 +216,6 @@ Report-32   15.897Mi ± 0%   1.684Mi ± 0%  -89.40% (p=0.002 n=6)
           │  allocs/op   │  allocs/op   vs base               │
 Report-32   225.08k ± 0%   55.04k ± 0%  -75.55% (p=0.002 n=6)
 ```
-
-Borra los perfiles cuando termines: `rm -f cpu.prof mem.prof 02-profiling.test`. (Cuando pasas un flag de profiling, `go test` deja el binario de test junto al perfil.)
 
 ## Entendiendo los Resultados
 
@@ -284,31 +234,12 @@ Perfila la nueva versión y el panorama cambia:
 
 Ahora ejecutar la regexp es la mitad del tiempo, y `strings.Fields` (un `[]string` por línea) es lo siguiente. Así funciona el profiling en la práctica: arregla lo primero de la lista, vuelve a perfilar y para cuando lo primero sea algo que estés dispuesto a pagar.
 
-### Perfilar un programa en lugar de un benchmark
-
-El mismo código está envuelto en un pequeño programa. Ejecútalo con `-cpuprofile`, que usa `runtime/pprof` directamente:
-
-```bash
-cd labs
-go run ./02-profiling/cmd/logreport -cpuprofile cpu.prof
-go tool pprof -top -cum cpu.prof | head -12
-```
-
-O arráncalo con `-http` y obtén un perfil del proceso en marcha a través de `net/http/pprof`, como lo harías con un servidor en producción:
-
-```bash
-go run ./02-profiling/cmd/logreport -http localhost:6060 -duration 60s &
-go tool pprof -http=: 'http://localhost:6060/debug/pprof/profile?seconds=5'
-```
-
-`pprof` guarda cada perfil que descarga en `$HOME/pprof/`, para que puedas volver a él más tarde.
-
 ## Puntos Clave
 
-- Los profilers de Go **muestrean**: el de CPU a 100 Hz de tiempo de CPU por hilo (SIGPROF, temporizadores `timer_create` por hilo en Linux), el de heap aproximadamente una vez por cada 512 KB asignados
+- Los profilers de Go **muestrean**: el de CPU unas 100 veces por segundo de tiempo de CPU, el de heap más o menos una vez cada 512 KB asignados
 - El perfil de CPU muestra **tiempo de CPU, no esperas**. El total de muestras puede superar el tiempo real cuando hay varios hilos ocupados
 - `alloc_space` encuentra el código que genera trabajo para el allocator y el GC; `inuse_space` encuentra lo que está reteniendo memoria
-- `flat` muestra dónde se queman los ciclos; `cum` muestra quién es el responsable. Empieza con `-top -cum`, y sigue con `-peek` y `-list`
+- `flat` muestra dónde se queman los ciclos; `cum` muestra quién es el responsable. Empieza con `-top -cum`, y sigue con `-list`
 - Mide con un benchmark, explica con un perfil, arregla y **vuelve a perfilar**
 
 ## Para Ir Más Allá (opcional)

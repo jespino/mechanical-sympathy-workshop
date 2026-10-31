@@ -30,7 +30,7 @@ Each `labs/NN-name/` package has:
 - `solution.go` (`//go:build solution`): the reference solution
 - `lab_test.go`: a correctness test (after == before) plus benchmarks with `b.Loop()` and sub-benchmarks `impl=before` / `impl=after`, so `benchstat -col /impl` compares them
 
-Some labs (01 benchmarking, 02 profiling, 18 PGO, 19 capstone) adapt this structure, and their pages document how.
+Some labs (02 profiling, 15 PGO) adapt this structure, and their pages document how.
 
 ### Module page structure
 
@@ -46,7 +46,7 @@ make test-labs                      # vet + test every lab, with and without -ta
 make bench LAB=NN [COUNT=6] [BENCH=regexp]   # benchmark after vs before, benchstat -col /impl
 make solution LAB=NN                # same with the reference solution
 make bench LAB=NN CPU=1,4,16        # pass -cpu to go test (contention labs)
-make pgo                            # module 18: -pgo=off vs -pgo=<profile>
+make pgo                            # module 15: -pgo=off vs -pgo=<profile>
 ```
 
 ## Diagrams

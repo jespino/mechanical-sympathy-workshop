@@ -14,20 +14,19 @@ Uses stock **Go 1.27**. No need to build Go from source.
 | 3 | Allocations | Pre-allocation | `growslice` vs `make([]T, 0, n)`, map size hints |
 | 4 | Allocations | Strings and Bytes | Conversions, concatenation, `strings.Builder` |
 | 5 | Allocations | Escape Analysis | Keep values on the stack |
-| 6 | Allocations | Inlining | Get a hot function under the budget |
-| 7 | Allocations | Inlining × Escape Analysis | Outlined constructors, 0 allocs/op |
-| 8 | Allocations | Interfaces, Boxing and Generics | `convT` allocations, dispatch, devirtualization |
-| 9 | Hardware | Struct Layout and Size Classes | Reorder fields, drop a size class |
-| 10 | Hardware | CPU Caches and Data Locality | Traversal order, `[]*T` vs `[]T`, AoS vs SoA |
-| 11 | Hardware | Bounds Check Elimination | Help the `prove` pass |
-| 12 | Hardware | Branch Prediction | Sorted vs unsorted, branchless code |
-| 13 | Runtime | sync.Pool | Pool buffers in a hot path |
-| 14 | Runtime | Helping the Garbage Collector | Pointer-free heaps, `GOGC`, `GOMEMLIMIT` |
-| 15 | Runtime | Contention and False Sharing | Mutex → atomic → sharded → padded |
-| 16 | Runtime | Goroutines, Channels and the Scheduler | Batching, worker pools |
-| 17 | Runtime | I/O and Syscalls | Buffered I/O |
-| 18 | Together | Profile-Guided Optimization | Rebuild with a CPU profile |
-| 19 | Together | Capstone | Optimize a log analyzer end to end |
+| 6 | Allocations | Inlining | Shopping-cart prices: inline the common case |
+| 7 | Allocations | Inlining × Escape Analysis | Customer signup constructors, 0 allocs/op |
+| 8 | Allocations | Interfaces and Boxing | Boxing price lists and calling budget checks |
+| 9 | Allocations | Bounds Check Elimination | Receipt totals with fewer bounds checks |
+| 10 | Runtime | Struct Layout and Size Classes | Compact shopping-order structs |
+| 11 | Runtime | sync.Pool | Pool buffers in a hot path |
+| 12 | Runtime | Helping the Garbage Collector | Pointer-free heaps, `GOGC`, `GOMEMLIMIT` |
+| 13 | Runtime | Goroutines, Channels and the Scheduler | Batch sale-price calculations |
+| 14 | Runtime | I/O and Syscalls | Buffered I/O |
+| 15 | Runtime | Profile-Guided Optimization | Rebuild with a CPU profile |
+| 16 | Hardware | CPU Caches and Data Locality | Daily sales and account balances |
+| 17 | Hardware | Contention and False Sharing | Mutex → atomic → sharded → padded |
+| 18 | Hardware | Branch Prediction | Filter product prices, sorted vs unsorted |
 
 ## Prerequisites
 
@@ -41,8 +40,8 @@ Uses stock **Go 1.27**. No need to build Go from source.
 make test-labs              # every lab builds and passes its tests
 make bench LAB=03           # your labs/03-*/after.go vs before.go
 make solution LAB=03        # the reference solution vs before.go
-make bench LAB=15 CPU=1,4,16  # also sweep GOMAXPROCS
-make pgo                    # module 18: build without vs with a CPU profile
+make bench LAB=16 CPU=1,4,16  # also sweep GOMAXPROCS
+make pgo                    # module 15: build without vs with a CPU profile
 ```
 
 ## Enabling and Disabling Modules

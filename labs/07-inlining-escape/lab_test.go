@@ -1,79 +1,88 @@
 package inlesc
 
 import (
-	"encoding/binary"
-	"hash/crc32"
+	"fmt"
 	"testing"
 )
 
-const (
-	numBlocks = 1_000
-	perBlock  = 16
-)
+const size = 1_000
 
-// makeBlock encodes timestamps into a block (see the format in before.go).
-func makeBlock(ts []int64) []byte {
-	var data []byte
-	var prevDelta int64
-	for i := 1; i < len(ts); i++ {
-		delta := ts[i] - ts[i-1]
-		dod := delta - prevDelta
-		data = binary.AppendUvarint(data, uint64(dod<<1)^uint64(dod>>63))
-		prevDelta = delta
-	}
-	block := []byte(magic)
-	block = append(block, version)
-	block = binary.LittleEndian.AppendUint16(block, uint16(len(ts)))
-	block = binary.LittleEndian.AppendUint64(block, uint64(ts[0]))
-	block = binary.LittleEndian.AppendUint32(block, crc32.ChecksumIEEE(data))
-	return append(block, data...)
-}
-
-// testBlocks returns many small blocks of timestamps scraped every ~10s.
-func testBlocks() [][]byte {
-	blocks := make([][]byte, numBlocks)
-	t := int64(1_700_000_000_000)
-	for i := range blocks {
-		ts := make([]int64, perBlock)
-		for j := range ts {
-			t += 10_000 + int64((i*perBlock+j)%7) - 3
-			if (i*perBlock+j)%1000 == 999 {
-				t += 60_000 // a missed scrape now and then
-			}
-			ts[j] = t
+func testSignups(n int) []Signup {
+	inputs := make([]Signup, n)
+	for i := range inputs {
+		inputs[i] = Signup{
+			Name:  fmt.Sprintf(" Customer %d ", i),
+			Email: fmt.Sprintf(" customer%d@example.com ", i),
 		}
-		blocks[i] = makeBlock(ts)
 	}
-	return blocks
+	return inputs
 }
 
-func TestSameResults(t *testing.T) {
-	blocks := testBlocks()
-	b, errB := MaxGapBefore(blocks)
-	a, errA := MaxGapAfter(blocks)
-	if errB != nil || errA != nil || a != b || b != 70_003 {
-		t.Errorf("before=%d (%v) after=%d (%v), want 70003", b, errB, a, errA)
+func TestCustomers(t *testing.T) {
+	cases := []struct {
+		name  string
+		input Signup
+		want  Signup
+		err   error
+	}{
+		{"valid", Signup{"Ada", "ada@example.com"}, Signup{"Ada", "ada@example.com"}, nil},
+		{"trim fields", Signup{" Ada \t", " ada@example.com "}, Signup{"Ada", "ada@example.com"}, nil},
+		{"unicode whitespace", Signup{"\u2003Ada\u2003", "ada@example.com"}, Signup{"Ada", "ada@example.com"}, nil},
+		{"blank name", Signup{" \t", "ada@example.com"}, Signup{}, ErrName},
+		{"missing email", Signup{"Ada", ""}, Signup{}, ErrEmail},
+		{"missing at", Signup{"Ada", "example.com"}, Signup{}, ErrEmail},
+		{"two ats", Signup{"Ada", "a@@example.com"}, Signup{}, ErrEmail},
+		{"missing local part", Signup{"Ada", "@example.com"}, Signup{}, ErrEmail},
+		{"missing domain", Signup{"Ada", "ada@"}, Signup{}, ErrEmail},
 	}
-	corrupt := testBlocks()
-	corrupt[3][headerSize] ^= 0xff // breaks the checksum
-	if _, err := MaxGapAfter(corrupt); err != ErrCorrupt {
-		t.Errorf("after: corrupt block: got %v, want ErrCorrupt", err)
-	}
-	short := [][]byte{[]byte("TS")}
-	if _, err := MaxGapAfter(short); err != ErrHeader {
-		t.Errorf("after: short block: got %v, want ErrHeader", err)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			b, be := NewCustomerBefore(tc.input)
+			a, ae := NewCustomerAfter(tc.input)
+			if be != tc.err || ae != tc.err {
+				t.Fatalf("errors: before=%v after=%v want=%v", be, ae, tc.err)
+			}
+			if tc.err != nil {
+				if b != nil || a != nil {
+					t.Fatal("invalid signup returned a customer")
+				}
+				return
+			}
+			if b == nil || a == nil {
+				t.Fatal("valid signup returned nil")
+			}
+			if b.Name != tc.want.Name || b.Email != tc.want.Email || a.Name != tc.want.Name || a.Email != tc.want.Email {
+				t.Fatalf("before=%+v after=%+v want=%+v", b, a, tc.want)
+			}
+		})
 	}
 }
 
-func BenchmarkMaxGap(b *testing.B) {
-	blocks := testBlocks()
+func TestCountValid(t *testing.T) {
+	for _, n := range []int{0, 1, 100} {
+		inputs := testSignups(n)
+		if got := CountValidAfter(inputs); got != n {
+			t.Fatalf("got %d, want %d", got, n)
+		}
+		inputs = append(inputs, Signup{}, Signup{"Ada", "invalid"})
+		if b, a := CountValidBefore(inputs), CountValidAfter(inputs); b != n || a != n {
+			t.Fatalf("before=%d after=%d want=%d", b, a, n)
+		}
+	}
+}
+
+var countSink int
+
+func BenchmarkCountValid(b *testing.B) {
+	inputs := testSignups(size)
 	for _, impl := range []struct {
 		name string
-		fn   func([][]byte) (int64, error)
-	}{{"before", MaxGapBefore}, {"after", MaxGapAfter}} {
+		fn   func([]Signup) int
+	}{{"before", CountValidBefore}, {"after", CountValidAfter}} {
 		b.Run("impl="+impl.name, func(b *testing.B) {
+			b.ReportAllocs()
 			for b.Loop() {
-				impl.fn(blocks)
+				countSink = impl.fn(inputs)
 			}
 		})
 	}

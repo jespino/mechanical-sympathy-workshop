@@ -1,87 +1,103 @@
 package ifaces
 
 import (
+	"slices"
 	"testing"
-	"time"
 )
 
-const size = 1_000
+// Prices exceed 255 so the allocation exercise doesn't use Go's shared
+// storage for small boxed integers.
+func testPrices(n int) []int {
+	prices := make([]int, n)
+	for i := range prices {
+		prices[i] = 1000 + i%1000
+	}
+	return prices
+}
 
-func testRequests() []Request {
-	reqs := make([]Request, size)
-	paths := []string{"/api/v1/query", "/api/v1/write", "/metrics", "/health"}
-	for i := range reqs {
-		reqs[i] = Request{
-			Method:  "GET",
-			Path:    paths[i%len(paths)],
-			Status:  200,
-			Bytes:   1000 + i,
-			Latency: time.Duration(500+i) * time.Microsecond,
+func TestCopyPrices(t *testing.T) {
+	for _, prices := range [][]int{nil, {}, {0, 1, 255, 256, 1000, -1}, testPrices(1000)} {
+		original := slices.Clone(prices)
+		before, after := CopyPricesBefore(prices), CopyPricesAfter(prices)
+		if len(before) != len(prices) || len(after) != len(prices) {
+			t.Fatal("copy has wrong length")
+		}
+		for i, want := range prices {
+			// Comparing with an int works with both the starter's []any
+			// and the solution's []int, so the test supports the type change.
+			if before[i] != want || after[i] != want {
+				t.Fatalf("price %d: before=%v after=%v want=%d", i, before[i], after[i], want)
+			}
+		}
+		if len(after) > 0 {
+			after[0] = 9999
+			before[0] = 8888
+		}
+		if !slices.Equal(prices, original) {
+			t.Fatal("copy shares or changes input storage")
 		}
 	}
-	return reqs
 }
 
-func testValues() []float64 {
-	vals := make([]float64, 10_000)
-	for i := range vals {
-		vals[i] = float64((i*7919)%1000) / 1000
+func TestCountAffordable(t *testing.T) {
+	cases := []struct {
+		prices []int
+		limit  int
+		want   int
+	}{
+		{nil, 1000, 0},
+		{[]int{500, 1000, 1500}, 1000, 2},
+		{[]int{500, 1000, 1500}, 499, 0},
+		{[]int{500, 1000, 1500}, 1500, 3},
+		{[]int{0, 1000, 1000}, 1000, 3},
 	}
-	return vals
-}
-
-func TestSameResults(t *testing.T) {
-	reqs := testRequests()
-	hb, ha := &TextHandler{}, &TextHandlerAfter{}
-	LogRequestsBefore(NewLoggerBefore(hb), reqs)
-	LogRequestsAfter(NewLoggerAfter(ha), reqs)
-	if string(hb.Buf) != string(ha.Buf) {
-		t.Errorf("Log: after differs from before:\n%.200s\n%.200s", hb.Buf, ha.Buf)
-	}
-
-	vals := testValues()
-	n1, s1, m1 := StatsBefore(vals, Threshold{Min: 0.5})
-	n2, s2, m2 := StatsAfter(vals, ThresholdAfter{Min: 0.5})
-	if n1 != n2 || s1 != s2 || m1 != m2 {
-		t.Errorf("Stats: before=(%d %v %v) after=(%d %v %v)", n1, s1, m1, n2, s2, m2)
+	for _, tc := range cases {
+		budget := &Budget{MaxCents: tc.limit}
+		if b, a := CountAffordableBefore(tc.prices, budget), CountAffordableAfter(tc.prices, budget); b != tc.want || a != tc.want {
+			t.Fatalf("limit=%d: before=%d after=%d want=%d", tc.limit, b, a, tc.want)
+		}
 	}
 }
 
-func BenchmarkLog(b *testing.B) {
-	reqs := testRequests()
+var priceSink int
+var countSink int
+var budgetLimit = 1500
+
+func BenchmarkCopyPrices(b *testing.B) {
+	prices := testPrices(1000)
 	b.Run("impl=before", func(b *testing.B) {
-		h := &TextHandler{}
-		l := NewLoggerBefore(h)
+		var last int
 		for b.Loop() {
-			h.Buf = h.Buf[:0]
-			LogRequestsBefore(l, reqs)
+			out := CopyPricesBefore(prices)
+			last = any(out[len(out)-1]).(int)
+		}
+		priceSink = last
+	})
+	b.Run("impl=after", func(b *testing.B) {
+		var last int
+		for b.Loop() {
+			out := CopyPricesAfter(prices)
+			// This temporary conversion works with either result type
+			// and does not escape. The compiler avoids its allocation.
+			last = any(out[len(out)-1]).(int)
+		}
+		priceSink = last
+	})
+}
+
+// Keep both batch functions uninlined so the benchmark measures the
+// difference between indirect and direct Keep calls inside their loops.
+func BenchmarkCountAffordable(b *testing.B) {
+	prices := testPrices(10_000)
+	budget := &Budget{MaxCents: budgetLimit}
+	b.Run("impl=before", func(b *testing.B) {
+		for b.Loop() {
+			countSink = CountAffordableBefore(prices, budget)
 		}
 	})
 	b.Run("impl=after", func(b *testing.B) {
-		h := &TextHandlerAfter{}
-		l := NewLoggerAfter(h)
 		for b.Loop() {
-			h.Buf = h.Buf[:0]
-			LogRequestsAfter(l, reqs)
-		}
-	})
-}
-
-// minFlag is a variable so that the compiler can't treat the filter as a
-// constant.
-var minFlag = 0.5
-
-func BenchmarkStats(b *testing.B) {
-	vals := testValues()
-	b.Run("impl=before", func(b *testing.B) {
-		var f Filter = Threshold{Min: minFlag}
-		for b.Loop() {
-			StatsBefore(vals, f)
-		}
-	})
-	b.Run("impl=after", func(b *testing.B) {
-		for b.Loop() {
-			StatsAfter(vals, ThresholdAfter{Min: minFlag})
+			countSink = CountAffordableAfter(prices, budget)
 		}
 	})
 }

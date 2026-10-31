@@ -1,7 +1,5 @@
 # Pre-asignación
 
-> **¿Quieres saber más?** Lee [`runtime/slice.go`](https://github.com/golang/go/blob/go1.27.0/src/runtime/slice.go) (busca `growslice` y `nextslicecap`) y la implementación de maps con Swiss Tables en [`internal/runtime/maps`](https://github.com/golang/go/tree/go1.27.0/src/internal/runtime/maps).
-
 Empezamos con la forma más sencilla de simpatía mecánica que existe. Si ya sabes cuánto espacio vas a necesitar, pídelo desde el principio. Parece obvio, pero `append` hace que hacer crecer un slice parezca gratis, y eso esconde una cantidad sorprendente de trabajo. En este módulo veremos qué hace `append` cuando se queda sin sitio, y después eliminaremos ese trabajo.
 
 ## Objetivos de Aprendizaje
@@ -54,7 +52,9 @@ for {
 
 ![Cada vez que append se queda sin capacidad, growslice reserva un array más grande, copia todo y deja el viejo como basura](images/03-growslice.webp)
 
-Los slices pequeños duplican su tamaño. Los más grandes crecen por un factor que baja suavemente de 2x hacia 1.25x. Después, `growslice` redondea el número de bytes pedido **hacia arriba hasta la siguiente clase de tamaño del allocator** (estudiaremos las clases de tamaño en [Layout de Structs y Clases de Tamaño](09-struct-layout.md)), y por eso las capacidades que observas no son exactamente las que da la fórmula.
+Los slices pequeños duplican su tamaño. Los más grandes crecen por un factor que baja suavemente de 2x hacia 1.25x.
+
+> **Nota.** `growslice` también redondea el número de bytes pedido **hacia arriba hasta la siguiente clase de tamaño del allocator** (estudiaremos las clases de tamaño en [Layout de Structs y Clases de Tamaño](10-struct-layout.md)). Por eso las capacidades que observas no son exactamente las que da la fórmula.
 
 Veámoslo en acción. El laboratorio incluye un pequeño programa que imprime cada realocación:
 
@@ -82,13 +82,13 @@ El programa necesitaba 16 KB de datos, pero por el camino movió **casi 40 KB** 
 
 ### Los maps también crecen
 
-Desde Go 1.24, los maps son **Swiss Tables**. Claves y valores viven en *grupos* de 8 slots, cada uno con una palabra de control de 8 etiquetas de un byte (`internal/runtime/maps/group.go`). Una tabla puede llenarse hasta 7/8 de sus slots (`maxAvgGroupLoad = 7`). A partir de ahí, crece: una tabla duplica su tamaño, y cuando alcanza `maxTableCapacity` (1024 slots) se **divide** en dos bajo un directorio (`table.grow`, `table.split` en `table.go`).
+Los maps tienen el mismo problema. Desde Go 1.24, un map de Go es una **Swiss Table**: sus entradas viven en pequeños grupos de slots, organizados en tablas. Cuando un map se llena demasiado (alrededor de 7/8 de sus slots), crece: reserva tablas más grandes y **reinserta todas las entradas** en ellas.
 
-![Un map Swiss Table: un directorio de tablas, cada una formada por grupos de 8 slots con una palabra de control](images/03-swiss.webp)
+![Un map Swiss Table: un directorio de tablas, cada una formada por grupos de 8 slots. Crecer significa recalcular el hash y reinsertar cada entrada](images/03-swiss.webp)
 
-En cualquier caso, crecer significa reservar grupos nuevos y **reinsertar todas las entradas**, recalculando su hash. Un map que llenas desde vacío con 10.000 entradas pasa por esto varias veces.
+Un map que llenas desde vacío con 10.000 entradas pasa por esto varias veces.
 
-`make(map[K]V, hint)` permite al runtime calcular desde el principio el número de grupos y tablas necesarios (mira `NewMap` en `map.go`). Pero no puede saber si la pista es acertada: el hint se *reserva*, lo uses o no.
+`make(map[K]V, hint)` le dice al runtime cuántas entradas esperar, para que pueda reservar espacio suficiente desde el principio. El hint se reserva lo uses o no, así que un hint demasiado grande desperdicia memoria.
 
 ## El Laboratorio
 
@@ -137,9 +137,13 @@ go tool pprof -top -cum cpu.prof | grep -E 'growslice|mallocgc|gcBgMarkWorker|Sq
     0     0% 77.78%   0.03s  1.39%  runtime.mallocgcSmallNoScanSC6
 ```
 
-**Más del 80% del tiempo de `SquaresBefore` se va dentro de `growslice`**, no calculando cuadrados. Y un tercio de todo el proceso son los workers de marcado en segundo plano del GC limpiando los arrays abandonados. Ese coste ni siquiera aparece bajo el nombre de tu función. (Novedad de Go 1.27: `mallocgcSmallNoScanSC6` es una de las rutinas de reserva *especializadas por tamaño*, una por clase de tamaño, a las que ahora llaman `mallocgc` y el código generado por el compilador para las reservas pequeñas. Abaratan un poco las reservas pequeñas, pero no eliminan las copias ni el trabajo del GC.)
+**Más del 80% del tiempo de `SquaresBefore` se va dentro de `growslice`**, no calculando cuadrados. Y un tercio de todo el proceso son los workers de marcado en segundo plano del GC limpiando los arrays abandonados. Ese coste ni siquiera aparece bajo el nombre de tu función.
 
-Prueba `go tool pprof -http=: cpu.prof` y abre el flame graph para ver lo mismo de forma visual.
+Prueba `go tool pprof -http=: cpu.prof` y abre el flame graph (*View → Flame Graph*) para ver lo mismo de forma visual:
+
+![El flame graph de pprof de SquaresBefore: growslice ocupa casi todo SquaresBefore, y gcBgMarkWorker es un gran bloque aparte](images/03-flame-graph.webp)
+
+Debajo de `SquaresBefore`, casi todo es `runtime.growslice`. El gran bloque de al lado, `runtime.gcBgMarkWorker`, es el GC limpiando lo que deja atrás.
 
 ### Paso 3: Arréglalo
 
@@ -157,7 +161,7 @@ Edita `labs/03-preallocation/after.go`:
 make bench LAB=03
 ```
 
-Estos son los resultados con la solución de referencia (`make solution LAB=03`) en un AMD Ryzen AI MAX+ 395. Tus números serán distintos, pero la forma debería ser la misma:
+Estos son los resultados con la solución de referencia (`make solution LAB=03`) en mi máquina. Tus números serán distintos, pero la forma debería ser la misma:
 
 ```
               │    before     │                after                │
@@ -202,7 +206,7 @@ La misma idea aparece por toda la librería estándar:
 
 - `append` sobre un slice lleno llama a `growslice`: **reserva, copia todo y deja basura atrás**
 - El crecimiento es de 2x para slices pequeños, bajando hacia 1.25x para los grandes, redondeado a una clase de tamaño
-- Los maps (Swiss Tables) crecen duplicando o dividiendo tablas, y cada crecimiento recalcula el hash de todas las entradas
+- Los maps también crecen, y cada vez que lo hacen reinsertan todas sus entradas
 - Un tamaño conocido, o una cota superior ajustada, convierte N asignaciones en 1
 - La mejora aparece en **allocs/op**, en **sec/op** y en tiempo de GC que se carga a otras goroutines
 - Un hint demasiado generoso desperdicia memoria, así que mide B/op y no solo sec/op

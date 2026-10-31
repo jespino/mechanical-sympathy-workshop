@@ -1,7 +1,5 @@
 # Pre-allocation
 
-> **Want to learn more?** Read [`runtime/slice.go`](https://github.com/golang/go/blob/go1.27.0/src/runtime/slice.go) (look for `growslice` and `nextslicecap`) and the Swiss Table map implementation in [`internal/runtime/maps`](https://github.com/golang/go/tree/go1.27.0/src/internal/runtime/maps).
-
 We start with the simplest form of mechanical sympathy there is. If you already know how much space you need, ask for it up front. It sounds obvious, but `append` makes growing a slice look free, and that hides a surprising amount of work. In this module we look at what `append` does when it runs out of room, and then we remove that work.
 
 ## Learning Objectives
@@ -54,7 +52,9 @@ for {
 
 ![Each time append runs out of capacity, growslice allocates a bigger array, copies everything and leaves the old one as garbage](images/03-growslice.webp)
 
-Small slices double. Bigger slices grow by a factor that slides smoothly from 2x down toward 1.25x. Then `growslice` rounds the requested byte size **up to the next allocator size class** (we'll study size classes in [Struct Layout and Size Classes](09-struct-layout.md)), which is why the capacities you observe are not the exact output of the formula.
+Small slices double. Bigger slices grow by a factor that slides smoothly from 2x down toward 1.25x.
+
+> **Note.** `growslice` also rounds the requested byte size **up to the next allocator size class** (we'll study size classes in [Struct Layout and Size Classes](10-struct-layout.md)). That's why the capacities you observe are not the exact output of the formula.
 
 Let's watch it happen. The lab includes a small program that prints every reallocation:
 
@@ -82,13 +82,13 @@ The program needed 16 KB of data, but along the way it moved **almost 40 KB** an
 
 ### Maps grow too
 
-Since Go 1.24, maps are **Swiss Tables**. Keys and values live in *groups* of 8 slots, each with a control word of 8 one-byte tags (`internal/runtime/maps/group.go`). A table may be filled up to 7/8 of its slots (`maxAvgGroupLoad = 7`). Past that, it grows: a table doubles in size, and once a table reaches `maxTableCapacity` (1024 slots) it **splits** in two under a directory instead (`table.grow`, `table.split` in `table.go`).
+Maps have the same problem. Since Go 1.24, a Go map is a **Swiss Table**: its entries live in small groups of slots, organized in tables. When a map gets too full (about 7/8 of its slots), it grows: it allocates bigger tables and **re-inserts every entry** into them.
 
-![A Swiss Table map: a directory of tables, each table made of groups of 8 slots with a control word](images/03-swiss.webp)
+![A Swiss Table map: a directory of tables, each table made of groups of 8 slots. Growing means rehashing and re-inserting every entry](images/03-swiss.webp)
 
-Either way, growing means allocating new groups and **re-inserting every entry**, which rehashes it. A map you fill from empty with 10,000 entries goes through that several times.
+A map you fill from empty with 10,000 entries goes through that several times.
 
-`make(map[K]V, hint)` lets the runtime compute the needed number of groups and tables up front (see `NewMap` in `map.go`). It cannot know the hint is accurate, though: the hint is *allocated*, whether or not you use it.
+`make(map[K]V, hint)` tells the runtime how many entries to expect, so it can allocate enough room up front. The hint is allocated whether you use it or not, so a hint that's far too big wastes memory.
 
 ## The Lab
 
@@ -137,9 +137,13 @@ go tool pprof -top -cum cpu.prof | grep -E 'growslice|mallocgc|gcBgMarkWorker|Sq
     0     0% 77.78%   0.03s  1.39%  runtime.mallocgcSmallNoScanSC6
 ```
 
-More than **80% of `SquaresBefore`'s time is spent inside `growslice`**, not computing squares. And a third of the whole process is the GC's background mark workers cleaning up the abandoned arrays. That cost doesn't even show up under your function's name. (New in Go 1.27: `mallocgcSmallNoScanSC6` is one of the *size-specialized* allocation routines, one per size class, that `mallocgc` and compiler-generated code now call for small allocations. They make small allocations a bit cheaper, but they don't remove the copying or the GC work.)
+More than **80% of `SquaresBefore`'s time is spent inside `growslice`**, not computing squares. And a third of the whole process is the GC's background mark workers cleaning up the abandoned arrays. That cost doesn't even show up under your function's name.
 
-Try `go tool pprof -http=: cpu.prof` and open the flame graph to see the same thing visually.
+Try `go tool pprof -http=: cpu.prof` and open the flame graph (*View → Flame Graph*) to see the same thing visually:
+
+![The pprof flame graph of SquaresBefore: growslice takes most of SquaresBefore, and gcBgMarkWorker is a big block of its own](images/03-flame-graph.webp)
+
+Under `SquaresBefore`, almost everything is `runtime.growslice`. The big block next to it, `runtime.gcBgMarkWorker`, is the GC cleaning up after it.
 
 ### Step 3: Fix it
 
@@ -157,7 +161,7 @@ Edit `labs/03-preallocation/after.go`:
 make bench LAB=03
 ```
 
-Here are the results with the reference solution (`make solution LAB=03`) on an AMD Ryzen AI MAX+ 395. Your numbers will differ, but the shape should be the same:
+Here are the results with the reference solution (`make solution LAB=03`) on my machine. Your numbers will differ, but the shape should be the same:
 
 ```
               │    before     │                after                │
@@ -202,7 +206,7 @@ The same idea shows up all over the standard library:
 
 - `append` on a full slice calls `growslice`: **allocate, copy everything, leave garbage behind**
 - Growth is 2x for small slices, sliding toward 1.25x for large ones, rounded up to a size class
-- Maps (Swiss Tables) grow by doubling or splitting tables, and every growth rehashes all entries
+- Maps grow too, and every time they do, they re-insert all their entries
 - A known size, or a tight upper bound, turns N allocations into 1
 - The benefit shows up in **allocs/op**, **sec/op**, and in GC time that is charged to other goroutines
 - An over-generous hint wastes memory, so measure B/op and not just sec/op

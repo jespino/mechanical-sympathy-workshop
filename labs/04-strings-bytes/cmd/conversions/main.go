@@ -9,33 +9,21 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"testing"
 )
 
 var (
-	short  = []byte("hello, gopher")                               // 13 bytes
-	long   = []byte("hello, gopher, this is longer than 32 bytes") // 44 bytes
-	longS  = string(long)
-	index  = map[string]int{longS: 1}
+	b      = []byte("hello, gopher, this is longer than 32 bytes")
+	s      = string(b)
+	index  = map[string]int{s: 1}
 	sinkS  string
-	sinkB  []byte
 	sinkN  int
 	counts = map[string]int{}
 )
 
 //go:noinline
-func escapes(b []byte) { sinkS = string(b) }
-
-//go:noinline
-func localShort(b []byte) int { s := string(b); return len(s) + int(s[3]) }
-
-//go:noinline
-func localLong(b []byte) int { s := string(b); return len(s) + int(s[3]) }
-
-//go:noinline
-func oneByte(b []byte) { sinkS = string(b[:1]) }
+func kept(b []byte) { sinkS = string(b) }
 
 //go:noinline
 func mapLookup(b []byte) int { return index[string(b)] }
@@ -58,12 +46,6 @@ func switchOn(b []byte) int {
 }
 
 //go:noinline
-func concatWithLiteral(b []byte) { sinkS = "<" + string(b) + ">" }
-
-//go:noinline
-func concatNoLiteral(b []byte) { sinkS = longS + string(b) }
-
-//go:noinline
 func rangeBytes(s string) (n int) {
 	for _, c := range []byte(s) {
 		n += int(c)
@@ -75,40 +57,27 @@ func rangeBytes(s string) (n int) {
 func readOnlyBytes(s string) int { bs := []byte(s); return int(bs[5]) + len(bs) }
 
 //go:noinline
-func mutatedBytes(s string) int { bs := []byte(s); bs[0] = 'H'; return int(bs[0]) }
-
-//go:noinline
-func toAssembly(s string) int { return bytes.IndexByte([]byte(s), 'z') }
-
-//go:noinline
-func bytesEscape(s string) { sinkB = []byte(s) }
+func modifiedBytes(s string) int { bs := []byte(s); bs[0] = 'H'; return int(bs[0]) }
 
 func main() {
 	cases := []struct {
 		name string
 		fn   func()
 	}{
-		{"string(b), result escapes", func() { escapes(long) }},
-		{"string(b), local, 13 bytes", func() { sinkN += localShort(short) }},
-		{"string(b), local, 44 bytes", func() { sinkN += localLong(long) }},
-		{"string(b), 1 byte", func() { oneByte(long) }},
-		{"m[string(b)] lookup", func() { sinkN += mapLookup(long) }},
-		{"m[string(b)]++", func() { mapIncrement(long) }},
+		{"string(b), result kept", func() { kept(b) }},
+		{"m[string(b)] lookup", func() { sinkN += mapLookup(b) }},
+		{"m[string(b)]++", func() { mapIncrement(b) }},
 		{`string(b) == "..."`, func() {
-			if compare(long) {
+			if compare(b) {
 				sinkN++
 			}
 		}},
-		{"switch string(b)", func() { sinkN += switchOn(long) }},
-		{`"<" + string(b) + ">"`, func() { concatWithLiteral(long) }},
-		{"s + string(b)", func() { concatNoLiteral(long) }},
-		{"for range []byte(s)", func() { sinkN += rangeBytes(longS) }},
-		{"[]byte(s), read only", func() { sinkN += readOnlyBytes(longS) }},
-		{"[]byte(s), mutated", func() { sinkN += mutatedBytes(longS) }},
-		{"bytes.IndexByte([]byte(s))", func() { sinkN += toAssembly(longS) }},
-		{"[]byte(s), result escapes", func() { bytesEscape(longS) }},
+		{"switch string(b)", func() { sinkN += switchOn(b) }},
+		{"for range []byte(s)", func() { sinkN += rangeBytes(s) }},
+		{"[]byte(s), read only", func() { sinkN += readOnlyBytes(s) }},
+		{"[]byte(s), modified", func() { sinkN += modifiedBytes(s) }},
 	}
-	fmt.Printf("%-30s %10s %8s %10s\n", "case", "ns/op", "B/op", "allocs/op")
+	fmt.Printf("%-24s %10s %8s %10s\n", "case", "ns/op", "B/op", "allocs/op")
 	for _, c := range cases {
 		r := testing.Benchmark(func(b *testing.B) {
 			b.ReportAllocs()
@@ -116,7 +85,7 @@ func main() {
 				c.fn()
 			}
 		})
-		fmt.Printf("%-30s %10.2f %8d %10d\n", c.name,
+		fmt.Printf("%-24s %10.2f %8d %10d\n", c.name,
 			float64(r.T.Nanoseconds())/float64(r.N), r.AllocedBytesPerOp(), r.AllocsPerOp())
 	}
 }

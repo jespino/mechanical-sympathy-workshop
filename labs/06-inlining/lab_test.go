@@ -1,60 +1,86 @@
 package inlining
 
-import (
-	"encoding/binary"
-	"slices"
-	"testing"
-)
+import "testing"
 
 const size = 10_000
 
-// testBlock returns timestamps scraped every 10s with a little jitter, and
-// their delta-of-delta encoding.
-func testBlock() ([]int64, []byte) {
-	ts := make([]int64, size)
-	var block []byte
-	t := int64(1_700_000_000_000) // milliseconds
-	var prevT, prevDelta int64
-	for i := range ts {
-		t += 10_000 + int64(i%5) - 2
-		ts[i] = t
-		delta := t - prevT
-		dod := delta - prevDelta
-		block = binary.AppendUvarint(block, uint64(dod<<1)^uint64(dod>>63)) // zigzag
-		prevT, prevDelta = t, delta
+func testCart() []Item {
+	items := make([]Item, size)
+	coupons := [...]string{"SAVE10", "SAVE20", "HALF", "UNKNOWN"}
+	for i := range items {
+		items[i].PriceCents = 100 + i%5_000
+		if i%100 == 0 {
+			items[i].Coupon = coupons[(i/100)%len(coupons)]
+		}
 	}
-	return ts, block
+	return items
 }
 
-func TestSameResults(t *testing.T) {
-	want, block := testBlock()
-	for _, impl := range []struct {
-		name string
-		fn   func([]int64, []byte) ([]int64, error)
-	}{{"before", DecodeTimestampsBefore}, {"after", DecodeTimestampsAfter}} {
-		got, err := impl.fn(nil, block)
-		if err != nil || !slices.Equal(got, want) {
-			t.Errorf("%s: wrong result (err=%v)", impl.name, err)
-		}
-		// Invalid inputs: truncated, too long, non-minimal.
-		for _, bad := range [][]byte{{0x80}, slices.Repeat([]byte{0xff}, 11), {0x81, 0x00}} {
-			if _, err := impl.fn(nil, bad); err != ErrCorrupt {
-				t.Errorf("%s: %x: got err=%v, want ErrCorrupt", impl.name, bad, err)
+func TestPrices(t *testing.T) {
+	cases := []struct {
+		name   string
+		cents  int
+		coupon string
+		want   int
+	}{
+		{"no coupon", 1000, "", 1000},
+		{"ten percent", 1000, "SAVE10", 900},
+		{"twenty percent", 1000, "SAVE20", 800},
+		{"half", 1000, "HALF", 500},
+		{"lowercase and spaces", 1000, "  save10 \t", 900},
+		{"unicode whitespace", 1000, "\u2003half\u2003", 500},
+		{"whitespace only", 1000, " \t", 1000},
+		{"unknown coupon", 1000, "WELCOME", 1000},
+		{"round discount down", 109, "SAVE10", 99},
+		{"round half down", 109, "HALF", 54},
+		{"free item", 0, "SAVE20", 0},
+		{"negative without coupon", -100, "", 0},
+		{"negative with coupon", -100, "SAVE20", 0},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, impl := range []struct {
+				name string
+				fn   func(int, string) int
+			}{{"before", priceBefore}, {"after", priceAfter}} {
+				if got := impl.fn(tc.cents, tc.coupon); got != tc.want {
+					t.Errorf("%s: got %d, want %d", impl.name, got, tc.want)
+				}
 			}
-		}
+		})
 	}
 }
 
-func BenchmarkDecode(b *testing.B) {
-	_, block := testBlock()
+func TestTotals(t *testing.T) {
+	for _, items := range [][]Item{nil, {}, {{1000, ""}, {1000, "SAVE10"}, {1000, "HALF"}}, testCart()} {
+		var want int
+		for _, item := range items {
+			want += priceBefore(item.PriceCents, item.Coupon)
+		}
+		if got := TotalBefore(items); got != want {
+			t.Errorf("before: got %d, want %d", got, want)
+		}
+		if got := TotalAfter(items); got != want {
+			t.Errorf("after: got %d, want %d", got, want)
+		}
+	}
+	if got := TotalAfter([]Item{{1000, ""}, {1000, "SAVE10"}, {1000, "HALF"}}); got != 2400 {
+		t.Errorf("example cart: got %d, want 2400", got)
+	}
+}
+
+var totalSink int
+
+func BenchmarkTotal(b *testing.B) {
+	items := testCart()
 	for _, impl := range []struct {
 		name string
-		fn   func([]int64, []byte) ([]int64, error)
-	}{{"before", DecodeTimestampsBefore}, {"after", DecodeTimestampsAfter}} {
+		fn   func([]Item) int
+	}{{"before", TotalBefore}, {"after", TotalAfter}} {
 		b.Run("impl="+impl.name, func(b *testing.B) {
-			dst := make([]int64, 0, size)
+			b.ReportAllocs()
 			for b.Loop() {
-				impl.fn(dst[:0], block)
+				totalSink = impl.fn(items)
 			}
 		})
 	}
