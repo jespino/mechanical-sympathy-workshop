@@ -115,7 +115,6 @@ const indexTemplate = `<!DOCTYPE html>
       <h1>{{.UI.HeroTitle}}</h1>
       <p class="lead">{{.UI.HeroLead}}</p>
       <ul class="hero-meta">
-        <li>{{if eq .Lang "es"}}Duración{{else}}Duration{{end}} <strong>~2 {{if eq .Lang "es"}}días (modular){{else}}days (modular){{end}}</strong></li>
         <li>{{if eq .Lang "es"}}Formato{{else}}Format{{end}} <strong>{{if eq .Lang "es"}}Teoría + labs{{else}}Theory + labs{{end}}</strong></li>
         <li>{{if eq .Lang "es"}}Módulos{{else}}Modules{{end}} <strong>{{len .Exercises}}</strong></li>
         <li>Go <strong>1.27+</strong></li>

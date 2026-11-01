@@ -779,7 +779,7 @@ strong {
 
 /* ——— Additions for this workshop ——— */
 
-/* Hero facts (duration, format, modules, Go version) */
+/* Hero facts (format, modules, Go version) */
 .hero-meta {
     display: flex;
     flex-wrap: wrap;
