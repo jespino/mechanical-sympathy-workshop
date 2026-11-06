@@ -1,8 +1,10 @@
 # Ayudando al Garbage Collector
 
-> **¿Quieres saber más?** [El Garbage Collector](https://internals-for-interns.com/es/posts/go-garbage-collector/), en Internals for Interns, recorre un ciclo completo de GC: marcado, write barriers, mark assist, barrido y el pacer.
-
 Reducir asignaciones ayuda al recolector de basura, pero también importan los datos que mantenemos vivos. Una colección grande de objetos unidos por punteros cuesta trabajo de recorrer en cada ciclo de GC. Cambiaremos la distribución de un almacén para reducir ese trabajo repetido.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [El Garbage Collector](https://internals-for-interns.com/es/posts/go-garbage-collector/) (artículo, Internals for Interns): un ciclo completo de GC: marcado, write barriers, mark assist, barrido y el pacer.
 
 ## Objetivos de Aprendizaje
 

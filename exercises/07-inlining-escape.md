@@ -1,8 +1,10 @@
 # Inlining × Escape Analysis
 
-> **Want to learn more?** [The IR](https://internals-for-interns.com/posts/the-go-ir/#the-optimization-pipeline) on Internals for Interns describes the order of the compiler's optimization passes, which is the reason inlining can change what escapes.
-
 Inlining can do more than remove a function call. It can also help the compiler keep an object on the stack, even when a constructor returns a pointer. This module combines the ideas from the previous two modules.
+
+## Content You May Want to Check First
+
+- [The IR](https://internals-for-interns.com/posts/the-go-ir/#the-optimization-pipeline) (article, Internals for Interns): the order of the optimization passes, which is why inlining can change what escapes.
 
 ## Learning Objectives
 

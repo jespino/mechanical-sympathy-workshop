@@ -1,8 +1,12 @@
 # Interfaces and Boxing
 
-> **Want to learn more?** Watch [Go Empty Interface Explained & The Hidden Heap Allocation](https://www.youtube.com/watch?v=_BxdvkLLnDc) by Phuong Le. On Internals for Interns, [The Reflect Package](https://internals-for-interns.com/posts/go-runtime-reflect/#inside-an-interface) looks inside an interface value, and [The IR](https://internals-for-interns.com/posts/the-go-ir/#devirtualization-making-the-indirect-direct) explains devirtualization.
-
 Interfaces make code flexible, but they can add allocations and hide optimization opportunities from the compiler. We will explore both with two small exercises using product prices.
+
+## Content You May Want to Check First
+
+- [Go Empty Interface Explained & The Hidden Heap Allocation](https://www.youtube.com/watch?v=_BxdvkLLnDc) (video by Phuong Le): what an `eface` holds, and when storing a value in one sends it to the heap through `convT`.
+- [The Reflect Package](https://internals-for-interns.com/posts/go-runtime-reflect/#inside-an-interface) (article, Internals for Interns): the layout of an interface value and the type data behind it.
+- [The IR](https://internals-for-interns.com/posts/the-go-ir/#devirtualization-making-the-indirect-direct) (article, Internals for Interns): how the compiler turns an interface call into a direct call.
 
 ## Learning Objectives
 

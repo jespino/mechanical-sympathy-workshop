@@ -1,8 +1,10 @@
 # Struct Layout and Size Classes
 
-> **Want to learn more?** [The Memory Allocator](https://internals-for-interns.com/posts/go-memory-allocator/) on Internals for Interns explains arenas, spans and size classes in detail.
-
 The order of fields in a struct can change how much memory it uses. Go may insert unused bytes between fields to keep them aligned. We will reorder a struct and measure how that affects both allocations and loops over its data.
+
+## Content You May Want to Check First
+
+- [The Memory Allocator](https://internals-for-interns.com/posts/go-memory-allocator/) (article, Internals for Interns): arenas, spans, size classes and the path of an allocation.
 
 ## Learning Objectives
 

@@ -1,8 +1,10 @@
 # Inlining × Escape Analysis
 
-> **¿Quieres saber más?** [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#el-pipeline-de-optimización), en Internals for Interns, describe el orden de los pases de optimización del compilador, que es el motivo por el que el inlining puede cambiar lo que escapa.
-
 El inlining puede hacer más que eliminar una llamada. También puede ayudar al compilador a mantener un objeto en el stack, aunque un constructor devuelva un puntero. Este módulo combina las ideas de los dos anteriores.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#el-pipeline-de-optimización) (artículo, Internals for Interns): el orden de los pases de optimización, que es el motivo por el que el inlining puede cambiar lo que escapa.
 
 ## Objetivos de Aprendizaje
 

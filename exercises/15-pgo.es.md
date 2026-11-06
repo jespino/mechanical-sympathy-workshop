@@ -1,8 +1,10 @@
 # Optimización Guiada por Perfiles
 
-> **¿Quieres saber más?** [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#devirtualización-profile-guided-pgo), en Internals for Interns, cubre la devirtualización guiada por perfiles junto a la estática.
-
 Hasta ahora hemos usado perfiles para decidir qué código cambiar. Con la **optimización guiada por perfiles (PGO)**, damos un perfil de CPU al compilador para que tome mejores decisiones. En este laboratorio, el código fuente no cambia; solo cambia la compilación.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#devirtualización-profile-guided-pgo) (artículo, Internals for Interns): cómo un perfil permite al compilador devirtualizar llamadas que el análisis estático no puede.
 
 ## Objetivos de Aprendizaje
 

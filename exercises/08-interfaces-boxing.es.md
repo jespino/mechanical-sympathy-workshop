@@ -1,8 +1,12 @@
 # Interfaces y Boxing
 
-> **¿Quieres saber más?** Mira [Go Empty Interface Explained & The Hidden Heap Allocation](https://www.youtube.com/watch?v=_BxdvkLLnDc), de Phuong Le (en inglés). En Internals for Interns, [El Paquete Reflect](https://internals-for-interns.com/es/posts/go-runtime-reflect/#dentro-de-una-interface) mira dentro de un valor de interfaz y [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#devirtualización-convirtiendo-lo-indirecto-en-directo) explica la devirtualización.
-
 Las interfaces hacen que el código sea flexible, pero pueden añadir asignaciones y ocultar al compilador oportunidades de optimización. Exploraremos ambos costes con dos ejercicios pequeños sobre precios de productos.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [Go Empty Interface Explained & The Hidden Heap Allocation](https://www.youtube.com/watch?v=_BxdvkLLnDc) (vídeo de Phuong Le, en inglés): qué contiene un `eface` y cuándo guardar un valor en él lo manda al heap a través de `convT`.
+- [El Paquete Reflect](https://internals-for-interns.com/es/posts/go-runtime-reflect/#dentro-de-una-interface) (artículo, Internals for Interns): la estructura de un valor de interfaz y los datos de tipo que hay detrás.
+- [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#devirtualización-convirtiendo-lo-indirecto-en-directo) (artículo, Internals for Interns): cómo convierte el compilador una llamada de interfaz en una llamada directa.
 
 ## Objetivos de Aprendizaje
 

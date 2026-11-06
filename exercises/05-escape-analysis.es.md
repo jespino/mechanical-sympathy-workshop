@@ -1,8 +1,11 @@
 # Escape Analysis
 
-> **¿Quieres saber más?** Mira [Escape Analysis in Go: Stack or Heap?](https://www.youtube.com/watch?v=BanG_wLnSfE), de Phuong Le (en inglés), para una explicación visual. En Internals for Interns, [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#análisis-de-escape-heap-o-stack) explica cómo hace el compilador este análisis.
-
 En los módulos anteriores redujimos el número de asignaciones pidiendo desde el principio la cantidad de memoria adecuada. Ahora vamos un paso más allá: dejamos de reservar en el heap por completo. En el lenguaje Go no existe la elección entre `new` y `malloc`. Escribes `&T{}` o `make([]byte, n)`, y es el **compilador** quien decide dónde vive esa memoria. Este módulo trata de cómo lo decide, de cómo leer sus decisiones y de cómo escribir código que le permita elegir el stack.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [Escape Analysis in Go: Stack or Heap?](https://www.youtube.com/watch?v=BanG_wLnSfE) (vídeo de Phuong Le, en inglés): stacks, heap, `-gcflags=-m` y los límites del análisis, incluido un cambio de Go 1.27.
+- [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#análisis-de-escape-heap-o-stack) (artículo, Internals for Interns): cómo sigue el compilador a un valor para decidir si escapa.
 
 ## Objetivos de Aprendizaje
 

@@ -1,6 +1,6 @@
 # Introduction and Setup
 
-> **Want to learn more?** The term comes from racing driver Jackie Stewart ("you don't have to be an engineer to be a racing driver, but you do have to have mechanical sympathy") and was brought to software by Martin Thompson. His [Mechanical Sympathy blog](https://mechanical-sympathy.blogspot.com/) is still a great read. For a tour of the first two layers below, Jesús Espino's GopherCon UK talks [Understanding the Go Compiler](https://www.youtube.com/watch?v=qnmoAA0WRgE) and [Understanding the Go Runtime](https://www.youtube.com/watch?v=arH3jp_x8yQ) follow a hello world through both, using Go 1.20 and 1.21. The [compiler](https://internals-for-interns.com/series/understanding-the-go-compiler/) and [runtime](https://internals-for-interns.com/series/understanding-the-go-runtime/) series on Internals for Interns go deeper.
+> **Want to learn more?** The term comes from racing driver Jackie Stewart ("you don't have to be an engineer to be a racing driver, but you do have to have mechanical sympathy") and was brought to software by Martin Thompson. His [Mechanical Sympathy blog](https://mechanical-sympathy.blogspot.com/) is still a great read.
 
 **Mechanical sympathy** means writing software with an understanding of the machine it runs on. You don't fight it, you cooperate with it. In Go, "the machine" is really three layers stacked on top of each other:
 
@@ -11,6 +11,13 @@
 ![The three layers under your Go code: compiler, runtime and hardware](images/00-layers.webp)
 
 Most of the time Go hides all of this from you, and that's a feature. But when a piece of code is hot, the difference between code that works *with* these layers and code that works *against* them is often 2x, 10x, or more, usually with no change to the algorithm.
+
+## Content You May Want to Check First
+
+- [Understanding the Go Compiler](https://www.youtube.com/watch?v=qnmoAA0WRgE) (talk by Jesús Espino, GopherCon UK, Go 1.20): the whole journey of a hello world from source code to machine code, stage by stage.
+- [Understanding the Go Runtime](https://www.youtube.com/watch?v=arH3jp_x8yQ) (talk by Jesús Espino, GopherCon UK, Go 1.21): what the runtime contains and how it starts up, from the memory allocator to the GC and the scheduler.
+- [Understanding the Go Compiler](https://internals-for-interns.com/series/understanding-the-go-compiler/) (article series, Internals for Interns): one article per stage of the compiler, from the lexer to the linker.
+- [Understanding the Go Runtime](https://internals-for-interns.com/series/understanding-the-go-runtime/) (article series, Internals for Interns): the allocator, the scheduler, the GC and the rest of the runtime, one piece at a time.
 
 ## How This Workshop Works
 

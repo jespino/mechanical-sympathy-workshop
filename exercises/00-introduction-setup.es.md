@@ -1,6 +1,6 @@
 # Introducción y Configuración
 
-> **¿Quieres saber más?** El término viene del piloto Jackie Stewart («no hace falta ser ingeniero para ser piloto de carreras, pero sí hay que tener simpatía mecánica») y Martin Thompson lo trajo al mundo del software. Su [blog Mechanical Sympathy](https://mechanical-sympathy.blogspot.com/) sigue siendo una lectura excelente. Para un recorrido por las dos primeras capas de las que hablamos abajo, las charlas de Jesús Espino en GopherCon UK [Understanding the Go Compiler](https://www.youtube.com/watch?v=qnmoAA0WRgE) y [Understanding the Go Runtime](https://www.youtube.com/watch?v=arH3jp_x8yQ) (en inglés, con Go 1.20 y 1.21) siguen a un hello world por ambas. Las series sobre el [compilador](https://internals-for-interns.com/es/series/understanding-the-go-compiler/) y el [runtime](https://internals-for-interns.com/es/series/understanding-the-go-runtime/) de Internals for Interns profundizan más.
+> **¿Quieres saber más?** El término viene del piloto Jackie Stewart («no hace falta ser ingeniero para ser piloto de carreras, pero sí hay que tener simpatía mecánica») y Martin Thompson lo trajo al mundo del software. Su [blog Mechanical Sympathy](https://mechanical-sympathy.blogspot.com/) sigue siendo una lectura excelente.
 
 **Simpatía mecánica** significa escribir software entendiendo la máquina sobre la que se ejecuta. No luchas contra ella, colaboras con ella. En Go, «la máquina» son en realidad tres capas, una encima de otra:
 
@@ -11,6 +11,13 @@
 ![Las tres capas bajo tu código Go: compilador, runtime y hardware](images/00-layers.webp)
 
 La mayor parte del tiempo Go te oculta todo esto, y eso es una virtud. Pero cuando un trozo de código es caliente, la diferencia entre un código que trabaja *con* estas capas y uno que trabaja *contra* ellas suele ser de 2x, 10x o más, normalmente sin cambiar el algoritmo.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [Understanding the Go Compiler](https://www.youtube.com/watch?v=qnmoAA0WRgE) (charla de Jesús Espino, GopherCon UK, Go 1.20, en inglés): el viaje completo de un hello world desde el código fuente hasta el código máquina, etapa por etapa.
+- [Understanding the Go Runtime](https://www.youtube.com/watch?v=arH3jp_x8yQ) (charla de Jesús Espino, GopherCon UK, Go 1.21, en inglés): qué contiene el runtime y cómo arranca, desde el memory allocator hasta el GC y el scheduler.
+- [Understanding the Go Compiler](https://internals-for-interns.com/es/series/understanding-the-go-compiler/) (serie de artículos, Internals for Interns): un artículo por cada etapa del compilador, del lexer al linker.
+- [Understanding the Go Runtime](https://internals-for-interns.com/es/series/understanding-the-go-runtime/) (serie de artículos, Internals for Interns): el allocator, el scheduler, el GC y el resto del runtime, pieza a pieza.
 
 ## Cómo Funciona Este Workshop
 

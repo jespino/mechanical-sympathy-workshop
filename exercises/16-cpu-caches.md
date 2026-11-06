@@ -1,8 +1,10 @@
 # CPU Caches and Data Locality
 
-> **Want to learn more?** Memory distance doesn't stop at the caches. [NUMA](https://internals-for-interns.com/posts/linux-kernel-numa/) on Internals for Interns explains why, on larger machines, part of the RAM is slower to reach than the rest.
-
 A loop can spend more time waiting for memory than doing arithmetic. CPU caches keep recently used data close to the processor. In this first module of Part IV, we will change how code visits data so it makes better use of those caches.
+
+## Content You May Want to Check First
+
+- [NUMA](https://internals-for-interns.com/posts/linux-kernel-numa/) (article, Internals for Interns): why, on larger machines, part of the RAM is slower to reach than the rest.
 
 ## Learning Objectives
 

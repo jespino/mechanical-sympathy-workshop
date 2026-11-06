@@ -1,8 +1,10 @@
 # Cachés de CPU y Localidad de Datos
 
-> **¿Quieres saber más?** La distancia a la memoria no termina en las cachés. [NUMA](https://internals-for-interns.com/es/posts/linux-kernel-numa/), en Internals for Interns, explica por qué, en máquinas grandes, parte de la RAM tarda más en alcanzarse que el resto.
-
 Un bucle puede pasar más tiempo esperando a la memoria que haciendo cálculos. Las cachés de CPU mantienen los datos recientes cerca del procesador. En este primer módulo de la Parte IV, cambiaremos cómo se recorren los datos para aprovechar mejor esas cachés.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [NUMA](https://internals-for-interns.com/es/posts/linux-kernel-numa/) (artículo, Internals for Interns): por qué, en máquinas grandes, parte de la RAM tarda más en alcanzarse que el resto.
 
 ## Objetivos de Aprendizaje
 

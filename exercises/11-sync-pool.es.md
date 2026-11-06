@@ -1,8 +1,10 @@
 # sync.Pool
 
-> **¿Quieres saber más?** Mira [sync.Pool in Go Explained & Avoid The Heap Allocation Mistake](https://www.youtube.com/watch?v=fwHok9ZhQaY), de Phuong Le (en inglés).
-
 Un buffer temporal puede ser barato de usar, pero caro de crear en cada petición. `sync.Pool` permite que las goroutines reutilicen objetos temporales entre llamadas. Usaremos un pool para un buffer de logs y mediremos las asignaciones y el trabajo del GC que evita.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [sync.Pool in Go Explained & Avoid The Heap Allocation Mistake](https://www.youtube.com/watch?v=fwHok9ZhQaY) (vídeo de Phuong Le, en inglés): cuándo usar un pool, cuándo se vacían sus objetos y qué trampas de asignación evitar.
 
 ## Objetivos de Aprendizaje
 

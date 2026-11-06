@@ -1,8 +1,11 @@
 # Pre-allocation
 
-> **Want to learn more?** For how maps work under the hood, watch [How Go Maps Work Internally: Swiss Tables](https://www.youtube.com/watch?v=TdtNViWk45I) by Phuong Le. [Slices, Maps, and Channels](https://internals-for-interns.com/posts/go-runtime-slices-maps-channels/) on Internals for Interns covers both the slice and the map internals.
-
 We start with the simplest form of mechanical sympathy there is. If you already know how much space you need, ask for it up front. It sounds obvious, but `append` makes growing a slice look free, and that hides a surprising amount of work. In this module we look at what `append` does when it runs out of room, and then we remove that work.
+
+## Content You May Want to Check First
+
+- [How Go Maps Work Internally: Swiss Tables](https://www.youtube.com/watch?v=TdtNViWk45I) (video by Phuong Le): how Swiss Table maps are stored and grow, including what the `make(map, hint)` size hint does.
+- [Slices, Maps, and Channels](https://internals-for-interns.com/posts/go-runtime-slices-maps-channels/) (article, Internals for Interns): how a slice grows and how a map is organized in the runtime.
 
 ## Learning Objectives
 

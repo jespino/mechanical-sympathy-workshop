@@ -1,8 +1,11 @@
 # Eliminación de Bounds Checks
 
-> **¿Quieres saber más?** Las comprobaciones de límites se eliminan en la etapa SSA del compilador. [La Fase SSA](https://internals-for-interns.com/es/posts/the-go-ssa/), en Internals for Interns, presenta esa etapa y enseña a observar cada pase con `GOSSAFUNC`. El [capítulo sobre los pases de optimización SSA](https://www.youtube.com/watch?v=qnmoAA0WRgE&t=1726s) de la charla *Understanding the Go Compiler* de Jesús Espino en GopherCon UK (en inglés) da la visión general.
-
 Go comprueba los índices de los slices para evitar lecturas y escrituras fuera de sus límites. El compilador puede quitar una comprobación si demuestra que el acceso es seguro. En este módulo le ayudamos a ver esa seguridad sin quitarla nosotros.
+
+## Contenido que Quizá Quieras Ver Primero
+
+- [La Fase SSA](https://internals-for-interns.com/es/posts/the-go-ssa/) (artículo, Internals for Interns): una introducción a SSA, la etapa del compilador en la que se eliminan las comprobaciones de límites, y cómo inspeccionar cada pase con `GOSSAFUNC`.
+- [Understanding the Go Compiler: pases de optimización SSA](https://www.youtube.com/watch?v=qnmoAA0WRgE&t=1726s) (charla de Jesús Espino, GopherCon UK, Go 1.20, en inglés): el capítulo con una visión general de esos pases.
 
 ## Objetivos de Aprendizaje
 

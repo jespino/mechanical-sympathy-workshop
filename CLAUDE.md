@@ -34,7 +34,7 @@ Some labs (02 profiling, 15 PGO) adapt this structure, and their pages document 
 
 ### Module page structure
 
-H1 title (no number) → "Want to learn more?" blockquote linking Go source at tag go1.27.0 → intro → Learning Objectives → The Concept (real internals, verified against the Go source) → The Lab (steps: baseline with `make bench LAB=NN`, evidence, fix, compare) → real sample output (with the CPU named) → Understanding the Results → Key Takeaways → Going Further. Every module has an English (`.md`) and a Spanish (`.es.md`) version. Cross-module links use `NN-name.md`.
+H1 title (no number) → intro → "Content You May Want to Check First" (when useful: bullets with a link, its kind and what it covers) → Learning Objectives → The Concept (real internals, verified against the Go source) → The Lab (steps: baseline with `make bench LAB=NN`, evidence, fix, compare) → real sample output (with the CPU named) → Understanding the Results → Key Takeaways → Going Further. Every module has an English (`.md`) and a Spanish (`.es.md`) version. Cross-module links use `NN-name.md`.
 
 ## Commands
 

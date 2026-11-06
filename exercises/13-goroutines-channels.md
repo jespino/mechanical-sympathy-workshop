@@ -1,8 +1,12 @@
 # Goroutines, Channels and the Scheduler
 
-> **Want to learn more?** On Internals for Interns, [The Scheduler](https://internals-for-interns.com/posts/go-runtime-scheduler/) covers the GMP model and how a goroutine finds work, and [Slices, Maps, and Channels](https://internals-for-interns.com/posts/go-runtime-slices-maps-channels/#channels) shows what a channel is inside. The [scheduler chapter](https://www.youtube.com/watch?v=arH3jp_x8yQ&t=1852s) of Jesús Espino's GopherCon UK talk *Understanding the Go Runtime* gives the overview.
-
 Goroutines and channels make concurrent work easier to organize, but starting workers and sending messages still takes time. When each task is tiny, that coordination can cost more than the task itself. We will group work into chunks and compare it with a plain loop.
+
+## Content You May Want to Check First
+
+- [The Scheduler](https://internals-for-interns.com/posts/go-runtime-scheduler/) (article, Internals for Interns): the GMP model and how a goroutine gets to run.
+- [Slices, Maps, and Channels](https://internals-for-interns.com/posts/go-runtime-slices-maps-channels/#channels) (article, Internals for Interns): what a channel is inside and how sends and receives work.
+- [Understanding the Go Runtime: scheduler and system monitor](https://www.youtube.com/watch?v=arH3jp_x8yQ&t=1852s) (talk by Jesús Espino, GopherCon UK, Go 1.21): the chapter with an overview of both.
 
 ## Learning Objectives
 

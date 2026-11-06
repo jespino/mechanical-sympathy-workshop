@@ -1,8 +1,11 @@
 # Bounds Check Elimination
 
-> **Want to learn more?** Bounds checks are removed in the compiler's SSA stage. [The SSA Phase](https://internals-for-interns.com/posts/the-go-ssa/) on Internals for Interns introduces that stage and shows how to watch each pass with `GOSSAFUNC`. The [SSA optimization passes chapter](https://www.youtube.com/watch?v=qnmoAA0WRgE&t=1726s) of Jesús Espino's GopherCon UK talk *Understanding the Go Compiler* gives the overview.
-
 Go checks slice indexes to prevent reads and writes outside the slice. The compiler can remove a check when it proves the access is safe. In this module we help it see that safety without removing it ourselves.
+
+## Content You May Want to Check First
+
+- [The SSA Phase](https://internals-for-interns.com/posts/the-go-ssa/) (article, Internals for Interns): an introduction to SSA, the compiler stage where bounds checks are removed, and how to inspect each pass with `GOSSAFUNC`.
+- [Understanding the Go Compiler: SSA optimization passes](https://www.youtube.com/watch?v=qnmoAA0WRgE&t=1726s) (talk by Jesús Espino, GopherCon UK, Go 1.20): the chapter with an overview of those passes.
 
 ## Learning Objectives
 

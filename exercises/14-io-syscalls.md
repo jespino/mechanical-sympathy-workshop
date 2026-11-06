@@ -1,8 +1,11 @@
 # I/O and Syscalls
 
-> **Want to learn more?** On Internals for Interns, [The Scheduler](https://internals-for-interns.com/posts/go-runtime-scheduler/#system-calls) explains what the runtime does when a goroutine enters a system call, and [The Network Poller](https://internals-for-interns.com/posts/go-netpoller/) explains how Go keeps a blocking API on top of non-blocking network I/O.
-
 Reading or writing a file asks the operating system to do work through a syscall. Thousands of tiny reads or writes can spend more time on those requests than on useful processing. We will batch them with buffers.
+
+## Content You May Want to Check First
+
+- [The Scheduler](https://internals-for-interns.com/posts/go-runtime-scheduler/#system-calls) (article, Internals for Interns): what the runtime does when a goroutine enters a system call.
+- [The Network Poller](https://internals-for-interns.com/posts/go-netpoller/) (article, Internals for Interns): how Go keeps a blocking API on top of non-blocking network I/O.
 
 ## Learning Objectives
 
