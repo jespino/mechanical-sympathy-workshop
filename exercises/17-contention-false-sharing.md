@@ -1,5 +1,7 @@
 # Contention and False Sharing
 
+> **Want to learn more?** [Profiling](https://internals-for-interns.com/posts/go-runtime-profiling/#mutex-profiling-the-lock-contention-one) on Internals for Interns explains how the runtime collects the mutex profile used in this lab.
+
 More workers do not always mean more progress. If every goroutine updates the same counter, they compete for the same memory. We will compare a mutex, an atomic counter and separate counters per worker, then fix the hidden sharing between nearby counters.
 
 ## Learning Objectives

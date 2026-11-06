@@ -1,5 +1,7 @@
 # Inlining
 
+> **¿Quieres saber más?** [El IR](https://internals-for-interns.com/es/posts/the-go-ir/#inlining-de-funciones-eliminando-llamadas), en Internals for Interns, explica el modelo de coste y el proceso de inlining. El [capítulo sobre optimizaciones del IR](https://www.youtube.com/watch?v=qnmoAA0WRgE&t=1206s) de la charla *Understanding the Go Compiler* de Jesús Espino en GopherCon UK (en inglés) muestra dónde encaja esta etapa en el compilador.
+
 En [Escape Analysis](05-escape-analysis.md) vimos una línea de la salida de `-m` que decía `inlining call to normalizeBefore`. El inlining consiste en que el compilador copia el cuerpo de una función dentro de la función que la llama, en lugar de emitir una llamada. Es la optimización que hace posibles muchas otras, y Go es bastante conservador con ella. En este módulo veremos las reglas que usa el compilador para decidir, y haremos que el caso común de una función muy usada sea lo bastante pequeño para hacerse inline.
 
 ## Objetivos de Aprendizaje

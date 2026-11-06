@@ -1,5 +1,7 @@
 # Branch Prediction
 
+> **Want to learn more?** On Internals for Interns, [From SSA to Machine Code](https://internals-for-interns.com/posts/the-go-machine-code/#generating-control-flow) shows how the compiler turns conditions into jumps, and [SIMD and Go](https://internals-for-interns.com/posts/go-simd/#masking-and-blending-the-simd-if) shows another way to avoid branches, with masks.
+
 A CPU often guesses which path an `if` will take so it can keep working before the condition is known. Predictable branches are cheap; wrong guesses waste work. We will compare sorted and random data, then try code that does not need a data-dependent jump.
 
 ## Learning Objectives

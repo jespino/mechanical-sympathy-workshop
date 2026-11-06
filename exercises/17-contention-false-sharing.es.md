@@ -1,5 +1,7 @@
 # Contención y False Sharing
 
+> **¿Quieres saber más?** [Profiling](https://internals-for-interns.com/es/posts/go-runtime-profiling/#mutex-profiling-el-de-la-contención-de-locks), en Internals for Interns, explica cómo recoge el runtime el perfil de mutex que usamos en este laboratorio.
+
 Más workers no siempre significan más progreso. Si todas las goroutines actualizan el mismo contador, compiten por la misma memoria. Compararemos un mutex, un contador atómico y contadores separados por worker, y después arreglaremos la compartición oculta entre contadores cercanos.
 
 ## Objetivos de Aprendizaje

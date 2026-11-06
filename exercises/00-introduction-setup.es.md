@@ -1,6 +1,6 @@
 # Introducción y Configuración
 
-> **¿Quieres saber más?** El término viene del piloto Jackie Stewart («no hace falta ser ingeniero para ser piloto de carreras, pero sí hay que tener simpatía mecánica») y Martin Thompson lo trajo al mundo del software. Su [blog Mechanical Sympathy](https://mechanical-sympathy.blogspot.com/) sigue siendo una lectura excelente.
+> **¿Quieres saber más?** El término viene del piloto Jackie Stewart («no hace falta ser ingeniero para ser piloto de carreras, pero sí hay que tener simpatía mecánica») y Martin Thompson lo trajo al mundo del software. Su [blog Mechanical Sympathy](https://mechanical-sympathy.blogspot.com/) sigue siendo una lectura excelente. Para un recorrido por las dos primeras capas de las que hablamos abajo, las charlas de Jesús Espino en GopherCon UK [Understanding the Go Compiler](https://www.youtube.com/watch?v=qnmoAA0WRgE) y [Understanding the Go Runtime](https://www.youtube.com/watch?v=arH3jp_x8yQ) (en inglés, con Go 1.20 y 1.21) siguen a un hello world por ambas. Las series sobre el [compilador](https://internals-for-interns.com/es/series/understanding-the-go-compiler/) y el [runtime](https://internals-for-interns.com/es/series/understanding-the-go-runtime/) de Internals for Interns profundizan más.
 
 **Simpatía mecánica** significa escribir software entendiendo la máquina sobre la que se ejecuta. No luchas contra ella, colaboras con ella. En Go, «la máquina» son en realidad tres capas, una encima de otra:
 

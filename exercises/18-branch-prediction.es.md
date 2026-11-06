@@ -1,5 +1,7 @@
 # Predicción de Saltos
 
+> **¿Quieres saber más?** En Internals for Interns, [De SSA a Código Máquina](https://internals-for-interns.com/es/posts/the-go-machine-code/#generando-control-de-flujo) muestra cómo convierte el compilador las condiciones en saltos, y [SIMD y Go](https://internals-for-interns.com/es/posts/go-simd/#máscaras-y-blending-el-if-de-simd) enseña otra forma de evitar ramas, con máscaras.
+
 La CPU suele adivinar qué camino tomará un `if` para seguir trabajando antes de conocer la condición. Los saltos predecibles son baratos; las predicciones fallidas desperdician trabajo. Compararemos datos ordenados y aleatorios, y probaremos código que no necesite un salto dependiente de los datos.
 
 ## Objetivos de Aprendizaje

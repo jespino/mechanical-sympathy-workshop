@@ -1,5 +1,7 @@
 # I/O y Syscalls
 
+> **¿Quieres saber más?** En Internals for Interns, [El Scheduler](https://internals-for-interns.com/es/posts/go-runtime-scheduler/#system-calls) explica qué hace el runtime cuando una goroutine entra en una llamada al sistema, y [El Network Poller](https://internals-for-interns.com/es/posts/go-netpoller/) explica cómo mantiene Go una API bloqueante sobre E/S de red no bloqueante.
+
 Leer o escribir un archivo pide trabajo al sistema operativo mediante una syscall. Miles de lecturas o escrituras diminutas pueden dedicar más tiempo a esas peticiones que al procesamiento útil. Las agruparemos usando buffers.
 
 ## Objetivos de Aprendizaje

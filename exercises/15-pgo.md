@@ -1,5 +1,7 @@
 # Profile-Guided Optimization
 
+> **Want to learn more?** [The IR](https://internals-for-interns.com/posts/the-go-ir/#profile-guided-devirtualization) on Internals for Interns covers profile-guided devirtualization alongside the static kind.
+
 So far, we have used profiles to decide what code to change. With **profile-guided optimization (PGO)**, we give a CPU profile to the compiler so it can make better decisions. In this lab, the source stays the same; only the build changes.
 
 ## Learning Objectives

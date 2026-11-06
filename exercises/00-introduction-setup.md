@@ -1,6 +1,6 @@
 # Introduction and Setup
 
-> **Want to learn more?** The term comes from racing driver Jackie Stewart ("you don't have to be an engineer to be a racing driver, but you do have to have mechanical sympathy") and was brought to software by Martin Thompson. His [Mechanical Sympathy blog](https://mechanical-sympathy.blogspot.com/) is still a great read.
+> **Want to learn more?** The term comes from racing driver Jackie Stewart ("you don't have to be an engineer to be a racing driver, but you do have to have mechanical sympathy") and was brought to software by Martin Thompson. His [Mechanical Sympathy blog](https://mechanical-sympathy.blogspot.com/) is still a great read. For a tour of the first two layers below, Jesús Espino's GopherCon UK talks [Understanding the Go Compiler](https://www.youtube.com/watch?v=qnmoAA0WRgE) and [Understanding the Go Runtime](https://www.youtube.com/watch?v=arH3jp_x8yQ) follow a hello world through both, using Go 1.20 and 1.21. The [compiler](https://internals-for-interns.com/series/understanding-the-go-compiler/) and [runtime](https://internals-for-interns.com/series/understanding-the-go-runtime/) series on Internals for Interns go deeper.
 
 **Mechanical sympathy** means writing software with an understanding of the machine it runs on. You don't fight it, you cooperate with it. In Go, "the machine" is really three layers stacked on top of each other:
 

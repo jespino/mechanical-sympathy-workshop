@@ -1,5 +1,7 @@
 # Profiling 101
 
+> **¿Quieres saber más?** [Profiling](https://internals-for-interns.com/es/posts/go-runtime-profiling/), en Internals for Interns, explica cómo recoge el runtime cada tipo de perfil, señales y muestreo incluidos.
+
 Un benchmark te dice *lo rápido* que es algo. No te dice *por qué*. Para eso necesitas un profiler, y Go tiene uno integrado en el runtime: sin instrumentación, sin recompilar, basta con un flag. En este módulo veremos cómo recogen sus datos los profilers de CPU y de heap, porque saberlo te dice hasta qué punto puedes fiarte de ellos. Después usaremos `go tool pprof` para encontrar un punto caliente que no está donde te imaginarías.
 
 ## Objetivos de Aprendizaje

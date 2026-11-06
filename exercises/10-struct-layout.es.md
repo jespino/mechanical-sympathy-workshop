@@ -1,5 +1,7 @@
 # Layout de Structs y Clases de Tamaño
 
+> **¿Quieres saber más?** [El Memory Allocator](https://internals-for-interns.com/es/posts/go-memory-allocator/), en Internals for Interns, explica en detalle las arenas, los spans y las size classes.
+
 El orden de los campos de un struct puede cambiar cuánta memoria ocupa. Go puede insertar bytes sin usar entre campos para mantenerlos alineados. Reordenaremos un struct y mediremos el efecto en las asignaciones y en los bucles que recorren sus datos.
 
 ## Objetivos de Aprendizaje

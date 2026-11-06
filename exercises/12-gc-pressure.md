@@ -1,5 +1,7 @@
 # Helping the Garbage Collector
 
+> **Want to learn more?** [The Garbage Collector](https://internals-for-interns.com/posts/go-garbage-collector/) on Internals for Interns follows a full GC cycle: marking, write barriers, mark assist, sweeping and the pacer.
+
 Reducing allocations helps the garbage collector, but the data we keep alive matters too. A large collection of objects linked by pointers takes work to scan on every GC cycle. We will change a store layout to reduce that repeated work.
 
 ## Learning Objectives

@@ -1,5 +1,7 @@
 # sync.Pool
 
+> **Want to learn more?** Watch [sync.Pool in Go Explained & Avoid The Heap Allocation Mistake](https://www.youtube.com/watch?v=fwHok9ZhQaY) by Phuong Le.
+
 A temporary buffer can be cheap to use but expensive to create on every request. `sync.Pool` lets goroutines reuse temporary objects across calls. We will pool a logging buffer and measure the allocations and GC work it avoids.
 
 ## Learning Objectives

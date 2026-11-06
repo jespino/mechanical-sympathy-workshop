@@ -1,5 +1,7 @@
 # Interfaces and Boxing
 
+> **Want to learn more?** Watch [Go Empty Interface Explained & The Hidden Heap Allocation](https://www.youtube.com/watch?v=_BxdvkLLnDc) by Phuong Le. On Internals for Interns, [The Reflect Package](https://internals-for-interns.com/posts/go-runtime-reflect/#inside-an-interface) looks inside an interface value, and [The IR](https://internals-for-interns.com/posts/the-go-ir/#devirtualization-making-the-indirect-direct) explains devirtualization.
+
 Interfaces make code flexible, but they can add allocations and hide optimization opportunities from the compiler. We will explore both with two small exercises using product prices.
 
 ## Learning Objectives

@@ -1,5 +1,7 @@
 # Inlining
 
+> **Want to learn more?** [The IR](https://internals-for-interns.com/posts/the-go-ir/#function-inlining-eliminating-calls) on Internals for Interns explains the cost model and the inlining process. The [IR optimizations chapter](https://www.youtube.com/watch?v=qnmoAA0WRgE&t=1206s) of Jesús Espino's GopherCon UK talk *Understanding the Go Compiler* shows where this stage sits in the compiler.
+
 In [Escape Analysis](05-escape-analysis.md) we saw a line of `-m` output that said `inlining call to normalizeBefore`. Inlining is the compiler copying a function's body into its caller, instead of emitting a call. It is the optimization that makes many others possible, and Go is quite conservative about it. In this module we look at the rules the compiler uses to decide, and we take a frequently called function and make its common case small enough to inline.
 
 ## Learning Objectives
